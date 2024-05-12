@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source\D3D11">
+      <UniqueIdentifier>{d3913bba-6d8f-43c9-80aa-b24a0b5abc7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\D3D12">
+      <UniqueIdentifier>{916c7c8c-6d56-487e-aa0a-5982226fa4ec}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="WinMain.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D11App.cpp">
+      <Filter>Source\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12App.cpp">
+      <Filter>Source\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32App.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D3D11App.h">
+      <Filter>Source\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12App.h">
+      <Filter>Source\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32App.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
