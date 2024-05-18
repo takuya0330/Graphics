@@ -9,15 +9,17 @@ D3D12App::D3D12App(LPCWSTR title, UINT width, UINT height)
     , m_gfx_cmd_allocators()
     , m_gfx_cmd_list()
     , m_swap_chain4()
-    , m_back_buffer_index(0)
     , m_rtv_heap()
     , m_rtv_heap_size(0)
     , m_back_buffers()
     , m_dsv_heap()
-    , m_dsv_heap_size(0)
     , m_depth_buffer()
-    , m_frame_fences()
-    , m_frame_fence_values()
+    , m_fence()
+    , m_fence_value(0)
+{
+}
+
+void D3D12App::PushCommandList(ID3D12GraphicsCommandList* gfx_cmd_list)
 {
 }
 
@@ -26,6 +28,7 @@ bool D3D12App::OnInitialize()
 	HRESULT hr = S_OK;
 
 	UINT dxgi_flags = 0;
+#if defined(_DEBUG)
 	{
 		ComPtr<ID3D12Debug> d3d12_debug;
 		hr = ::D3D12GetDebugInterface(IID_PPV_ARGS(d3d12_debug.GetAddressOf()));
@@ -42,6 +45,7 @@ bool D3D12App::OnInitialize()
 		d3d12_debug3->SetEnableGPUBasedValidation(true);
 #endif
 	}
+#endif
 
 	ComPtr<IDXGIFactory6> dxgi_factory6;
 	{
@@ -121,7 +125,7 @@ bool D3D12App::OnInitialize()
 			.Stereo      = true,
 			.SampleDesc  = {.Count = 1, .Quality = 0},
 			.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
-			.BufferCount = 2,
+			.BufferCount = kBackBufferCount,
 			.Scaling     = DXGI_SCALING_NONE,
 			.SwapEffect  = DXGI_SWAP_EFFECT_FLIP_DISCARD,
 			.AlphaMode   = DXGI_ALPHA_MODE_UNSPECIFIED,
@@ -149,30 +153,28 @@ bool D3D12App::OnInitialize()
 		RETURN_FALSE_IF_FAILED(hr);
 		m_rtv_heap_size = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
+		auto handle = m_rtv_heap->GetCPUDescriptorHandleForHeapStart();
+		for (UINT i = 0; i < kBackBufferCount; ++i)
+		{
+			auto& back_buffer = m_back_buffers.at(i);
+			hr                = m_swap_chain4->GetBuffer(i, IID_PPV_ARGS(back_buffer.GetAddressOf()));
+			RETURN_FALSE_IF_FAILED(hr);
+
+			m_device->CreateRenderTargetView(back_buffer.Get(), nullptr, handle);
+			handle.ptr += m_rtv_heap_size;
+		}
+	}
+
+	{
 		D3D12_DESCRIPTOR_HEAP_DESC dsv_heap_desc = {
 			.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
 			.NumDescriptors = 1,
 			.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_NONE,
 			.NodeMask       = 0
 		};
-		hr = m_device->CreateDescriptorHeap(&rtv_heap_desc, IID_PPV_ARGS(m_dsv_heap.GetAddressOf()));
+		hr = m_device->CreateDescriptorHeap(&dsv_heap_desc, IID_PPV_ARGS(m_dsv_heap.GetAddressOf()));
 		RETURN_FALSE_IF_FAILED(hr);
-		m_dsv_heap_size = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	}
 
-	{
-		auto handle = m_rtv_heap->GetCPUDescriptorHandleForHeapStart();
-		for (UINT i = 0; i < kBackBufferCount; ++i)
-		{
-			hr = m_swap_chain4->GetBuffer(i, IID_PPV_ARGS(m_back_buffers.at(i).GetAddressOf()));
-			RETURN_FALSE_IF_FAILED(hr);
-
-			m_device->CreateRenderTargetView(m_back_buffers.at(i).Get(), nullptr, handle);
-			handle.ptr += static_cast<SIZE_T>(i * m_rtv_heap_size);
-		}
-	}
-
-	{
 		D3D12_HEAP_PROPERTIES d3d12_heap_properties = {
 			.Type                 = D3D12_HEAP_TYPE_DEFAULT,
 			.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
@@ -187,7 +189,7 @@ bool D3D12App::OnInitialize()
 			.Width            = m_width,
 			.Height           = m_height,
 			.DepthOrArraySize = 1,
-			.MipLevels        = 1,
+			.MipLevels        = 0,
 			.Format           = DXGI_FORMAT_D32_FLOAT,
 			.SampleDesc       = {.Count = 1, .Quality = 0},
 			.Layout           = D3D12_TEXTURE_LAYOUT_UNKNOWN,
@@ -204,7 +206,7 @@ bool D3D12App::OnInitialize()
 		    D3D12_HEAP_FLAG_NONE,
 		    &d3d12_resource_desc,
 		    D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		    nullptr,
+		    &d3d12_clear_value,
 		    IID_PPV_ARGS(m_depth_buffer.GetAddressOf()));
 		RETURN_FALSE_IF_FAILED(hr);
 
@@ -219,13 +221,10 @@ bool D3D12App::OnInitialize()
 	}
 
 	{
-		for (UINT i = 0; i < kBackBufferCount; ++i)
-		{
-			hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_frame_fences.at(i).GetAddressOf()));
-			RETURN_FALSE_IF_FAILED(hr);
+		hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_fence.GetAddressOf()));
+		RETURN_FALSE_IF_FAILED(hr);
 
-			m_frame_fence_values.at(i) = 0;
-		}
+		m_fence_value = 0;
 	}
 
 	return true;
@@ -241,4 +240,91 @@ void D3D12App::OnUpdate()
 
 void D3D12App::OnRender()
 {
+	HRESULT hr = S_OK;
+
+	auto frame_index = m_swap_chain4->GetCurrentBackBufferIndex();
+	{
+		hr = m_gfx_cmd_allocators.at(frame_index)->Reset();
+		ASSERT_IF_FAILED(hr);
+
+		hr = m_gfx_cmd_list->Reset(m_gfx_cmd_allocators.at(frame_index).Get(), nullptr);
+		ASSERT_IF_FAILED(hr);
+	}
+
+	{
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		barrier.Transition.pResource   = m_back_buffers.at(frame_index).Get();
+		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+		barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		m_gfx_cmd_list->ResourceBarrier(1, &barrier);
+	}
+
+	{
+		D3D12_VIEWPORT viewport = {
+			.TopLeftX = 0,
+			.TopLeftY = 0,
+			.Width    = static_cast<float>(m_width),
+			.Height   = static_cast<float>(m_height),
+			.MinDepth = 0.0f,
+			.MaxDepth = 1.0f
+		};
+		m_gfx_cmd_list->RSSetViewports(1, &viewport);
+
+		D3D12_RECT scissor = {
+			.left   = 0,
+			.top    = 0,
+			.right  = static_cast<LONG>(m_width),
+			.bottom = static_cast<LONG>(m_height)
+		};
+		m_gfx_cmd_list->RSSetScissorRects(1, &scissor);
+	}
+
+	{
+		auto rtv = m_rtv_heap->GetCPUDescriptorHandleForHeapStart();
+		rtv.ptr += static_cast<SIZE_T>(m_rtv_heap_size * frame_index);
+
+		constexpr float kClearColor[] = { 0, 0, 0, 1 };
+		m_gfx_cmd_list->ClearRenderTargetView(rtv, kClearColor, 0, nullptr);
+
+		auto dsv = m_dsv_heap->GetCPUDescriptorHandleForHeapStart();
+		m_gfx_cmd_list->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+		m_gfx_cmd_list->OMSetRenderTargets(1, &rtv, false, nullptr);
+	}
+
+	PushCommandList(m_gfx_cmd_list.Get());
+
+	{
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		barrier.Transition.pResource   = m_back_buffers.at(frame_index).Get();
+		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_PRESENT;
+		m_gfx_cmd_list->ResourceBarrier(1, &barrier);
+	}
+
+	{
+		hr = m_gfx_cmd_list->Close();
+		ASSERT_IF_FAILED(hr);
+
+		ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list.Get() };
+		m_gfx_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), cmd_lists);
+		m_gfx_cmd_queue->Signal(m_fence.Get(), ++m_fence_value);
+
+		auto value = m_fence->GetCompletedValue();
+		if (m_fence->GetCompletedValue() < m_fence_value)
+		{
+			auto event = ::CreateEvent(nullptr, false, false, nullptr);
+			m_fence->SetEventOnCompletion(m_fence_value, event);
+			::WaitForSingleObject(event, INFINITE);
+			::CloseHandle(event);
+		}
+
+        m_swap_chain4->Present(1, 0);
+	}
 }

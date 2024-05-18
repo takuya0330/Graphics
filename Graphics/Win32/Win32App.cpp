@@ -34,7 +34,7 @@ int Win32App::Run()
 	};
 	ASSERT_RETURN(::RegisterClassEx(&wcex), 1);
 
-    RECT  rect  = { 0, 0, static_cast<LONG>(m_width), static_cast<LONG>(m_height) };
+	RECT  rect  = { 0, 0, static_cast<LONG>(m_width), static_cast<LONG>(m_height) };
 	DWORD style = WS_OVERLAPPEDWINDOW;
 	ASSERT_RETURN(::AdjustWindowRect(&rect, style, false), 1);
 
@@ -55,11 +55,11 @@ int Win32App::Run()
 
 	::SetWindowLongPtr(m_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 
-    ::UpdateWindow(m_hwnd);
+	ASSERT_RETURN(OnInitialize(), 1);
+
+	::UpdateWindow(m_hwnd);
 	::ShowWindow(m_hwnd, SW_NORMAL);
 	::ShowCursor(true);
-
-	ASSERT_RETURN(OnInitialize(), 1);
 
 	MSG msg = {};
 	while (msg.message != WM_QUIT)

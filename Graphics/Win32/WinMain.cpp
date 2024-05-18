@@ -4,8 +4,6 @@
 #define APP_D3D11 1
 #define APP_D3D12 1
 
-#include <crtdbg.h>
-
 #if 0
 #elif APP_D3D12
 #include "D3D12App.h"
@@ -17,10 +15,6 @@
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
 {
-#if defined(_DEBUG)
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif
-
 	constexpr UINT kWidth  = 1280;
 	constexpr UINT kHeight = 720;
 
