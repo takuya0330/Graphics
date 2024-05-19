@@ -52,16 +52,18 @@ public:
 	virtual ~D3D12App() override = default;
 
 protected:
-	virtual void PushCommandList(ID3D12GraphicsCommandList* gfx_cmd_list);
+	virtual bool OnInitialize() override;
 
-private:
-	bool OnInitialize() override;
+	virtual void OnFinalize() override;
 
-	void OnFinalize() override;
+	virtual void OnUpdate() override;
 
-	void OnUpdate() override;
+	virtual void OnRender() override;
 
-	void OnRender() override;
+protected:
+	void BeginFrame();
+
+	void EndFrame();
 
 protected:
 	ComPtr<ID3D12Device>              m_device;
@@ -69,6 +71,7 @@ protected:
 	ComPtr2<ID3D12CommandAllocator>   m_gfx_cmd_allocators;
 	ComPtr<ID3D12GraphicsCommandList> m_gfx_cmd_list;
 	ComPtr<IDXGISwapChain4>           m_swap_chain4;
+	UINT                              m_back_buffer_index;
 	ComPtr<ID3D12DescriptorHeap>      m_rtv_heap;
 	UINT                              m_rtv_heap_size;
 	ComPtr2<ID3D12Resource>           m_back_buffers;

@@ -12,10 +12,6 @@ D3D11App::D3D11App(LPCWSTR title, UINT width, UINT height)
 {
 }
 
-void D3D11App::PushCommandList(ID3D11DeviceContext* immediate_context)
-{
-}
-
 bool D3D11App::OnInitialize()
 {
 	HRESULT hr = S_OK;
@@ -152,7 +148,13 @@ void D3D11App::OnUpdate()
 
 void D3D11App::OnRender()
 {
-    {
+	BeginFrame();
+	EndFrame();
+}
+
+void D3D11App::BeginFrame()
+{
+	{
 		D3D11_VIEWPORT viewport = {
 			.TopLeftX = 0,
 			.TopLeftY = 0,
@@ -162,18 +164,17 @@ void D3D11App::OnRender()
 			.MaxDepth = 1.0f
 		};
 		m_d3d11_immediate_context->RSSetViewports(1, &viewport);
-    }
+	}
 
-    {
+	{
 		constexpr float kClearColor[] = { 0, 0, 0, 1 };
 		m_d3d11_immediate_context->ClearRenderTargetView(m_d3d11_render_target_view.Get(), kClearColor);
 		m_d3d11_immediate_context->ClearDepthStencilView(m_d3d11_depth_stencil_view.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		m_d3d11_immediate_context->OMSetRenderTargets(1, m_d3d11_render_target_view.GetAddressOf(), m_d3d11_depth_stencil_view.Get());
-    }
+	}
+}
 
-    PushCommandList(m_d3d11_immediate_context.Get());
-
-    {
-		m_dxgi_swap_chain->Present(1, 0);
-    }
+void D3D11App::EndFrame()
+{
+	m_dxgi_swap_chain->Present(1, 0);
 }

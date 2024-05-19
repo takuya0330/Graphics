@@ -45,16 +45,18 @@ public:
 	virtual ~D3D11App() override = default;
 
 protected:
-	virtual void PushCommandList(ID3D11DeviceContext* immediate_context);
+	virtual bool OnInitialize() override;
 
-private:
-	bool OnInitialize() override;
+	virtual void OnFinalize() override;
 
-	void OnFinalize() override;
+	virtual void OnUpdate() override;
 
-	void OnUpdate() override;
+	virtual void OnRender() override;
 
-	void OnRender() override;
+protected:
+	void BeginFrame();
+
+    void EndFrame();
 
 protected:
 	ComPtr<ID3D11Device>           m_d3d11_device;

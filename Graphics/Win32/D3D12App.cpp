@@ -9,6 +9,7 @@ D3D12App::D3D12App(LPCWSTR title, UINT width, UINT height)
     , m_gfx_cmd_allocators()
     , m_gfx_cmd_list()
     , m_swap_chain4()
+    , m_back_buffer_index(0)
     , m_rtv_heap()
     , m_rtv_heap_size(0)
     , m_back_buffers()
@@ -16,10 +17,6 @@ D3D12App::D3D12App(LPCWSTR title, UINT width, UINT height)
     , m_depth_buffer()
     , m_fence()
     , m_fence_value(0)
-{
-}
-
-void D3D12App::PushCommandList(ID3D12GraphicsCommandList* gfx_cmd_list)
 {
 }
 
@@ -240,14 +237,20 @@ void D3D12App::OnUpdate()
 
 void D3D12App::OnRender()
 {
+	BeginFrame();
+	EndFrame();
+}
+
+void D3D12App::BeginFrame()
+{
 	HRESULT hr = S_OK;
 
-	auto frame_index = m_swap_chain4->GetCurrentBackBufferIndex();
+	m_back_buffer_index = m_swap_chain4->GetCurrentBackBufferIndex();
 	{
-		hr = m_gfx_cmd_allocators.at(frame_index)->Reset();
+		hr = m_gfx_cmd_allocators.at(m_back_buffer_index)->Reset();
 		ASSERT_IF_FAILED(hr);
 
-		hr = m_gfx_cmd_list->Reset(m_gfx_cmd_allocators.at(frame_index).Get(), nullptr);
+		hr = m_gfx_cmd_list->Reset(m_gfx_cmd_allocators.at(m_back_buffer_index).Get(), nullptr);
 		ASSERT_IF_FAILED(hr);
 	}
 
@@ -255,7 +258,7 @@ void D3D12App::OnRender()
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource   = m_back_buffers.at(frame_index).Get();
+		barrier.Transition.pResource   = m_back_buffers.at(m_back_buffer_index).Get();
 		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 		barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -284,7 +287,7 @@ void D3D12App::OnRender()
 
 	{
 		auto rtv = m_rtv_heap->GetCPUDescriptorHandleForHeapStart();
-		rtv.ptr += static_cast<SIZE_T>(m_rtv_heap_size * frame_index);
+		rtv.ptr += static_cast<SIZE_T>(m_rtv_heap_size * m_back_buffer_index);
 
 		constexpr float kClearColor[] = { 0, 0, 0, 1 };
 		m_gfx_cmd_list->ClearRenderTargetView(rtv, kClearColor, 0, nullptr);
@@ -294,14 +297,17 @@ void D3D12App::OnRender()
 
 		m_gfx_cmd_list->OMSetRenderTargets(1, &rtv, false, nullptr);
 	}
+}
 
-	PushCommandList(m_gfx_cmd_list.Get());
+void D3D12App::EndFrame()
+{
+	HRESULT hr = S_OK;
 
 	{
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource   = m_back_buffers.at(frame_index).Get();
+		barrier.Transition.pResource   = m_back_buffers.at(m_back_buffer_index).Get();
 		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_PRESENT;
