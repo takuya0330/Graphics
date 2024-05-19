@@ -74,6 +74,6 @@ protected:
 	ComPtr2<ID3D12Resource>           m_back_buffers;
 	ComPtr<ID3D12DescriptorHeap>      m_dsv_heap;
 	ComPtr<ID3D12Resource>            m_depth_buffer;
-	ComPtr<ID3D12Fence> m_fence;
-	UINT64              m_fence_value;
+	ComPtr<ID3D12Fence>               m_fence;
+	UINT64                            m_fence_value;
 };

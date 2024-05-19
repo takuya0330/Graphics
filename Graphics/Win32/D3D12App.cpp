@@ -118,7 +118,7 @@ bool D3D12App::OnInitialize()
 	}
 
 	{
-		DXGI_SWAP_CHAIN_DESC1 desc = {
+		DXGI_SWAP_CHAIN_DESC1 swap_chain_desc1 = {
 			.Width       = m_width,
 			.Height      = m_height,
 			.Format      = DXGI_FORMAT_R8G8B8A8_UNORM,
@@ -132,7 +132,7 @@ bool D3D12App::OnInitialize()
 			.Flags       = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
 		};
 		ComPtr<IDXGISwapChain1> dxgi_swap_chain1;
-		hr = dxgi_factory6->CreateSwapChainForHwnd(m_gfx_cmd_queue.Get(), m_hwnd, &desc, nullptr, nullptr, dxgi_swap_chain1.GetAddressOf());
+		hr = dxgi_factory6->CreateSwapChainForHwnd(m_gfx_cmd_queue.Get(), m_hwnd, &swap_chain_desc1, nullptr, nullptr, dxgi_swap_chain1.GetAddressOf());
 		RETURN_FALSE_IF_FAILED(hr);
 
 		hr = dxgi_factory6->MakeWindowAssociation(m_hwnd, DXGI_MWA_NO_ALT_ENTER);
@@ -325,6 +325,6 @@ void D3D12App::OnRender()
 			::CloseHandle(event);
 		}
 
-        m_swap_chain4->Present(1, 0);
+		m_swap_chain4->Present(1, 0);
 	}
 }
