@@ -12,6 +12,13 @@
 		return __VA_ARGS__;      \
 	}
 
+#define ASSERT_IF_FAILED(hr)                     \
+	if (FAILED(hr))                              \
+	{                                            \
+		printf("ERROR: HRESULT = 0x%08X\n", hr); \
+		assert(SUCCEEDED(hr));                   \
+	}
+
 #define RETURN_HRESULT_IF_FAILED(hr)             \
 	if (FAILED(hr))                              \
 	{                                            \
@@ -24,11 +31,4 @@
 	{                                            \
 		printf("ERROR: HRESULT = 0x%08X\n", hr); \
 		return false;                            \
-	}
-
-#define ASSERT_IF_FAILED(hr)                     \
-	if (FAILED(hr))                              \
-	{                                            \
-		printf("ERROR: HRESULT = 0x%08X\n", hr); \
-		assert(SUCCEEDED(hr));                   \
 	}
