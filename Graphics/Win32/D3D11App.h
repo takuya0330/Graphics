@@ -40,9 +40,9 @@ protected:
 	virtual void OnRender() override;
 
 protected:
-	void BeginFrame();
+	virtual void BeginFrame();
 
-    void EndFrame();
+    virtual void EndFrame();
 
 protected:
 	ComPtr<ID3D11Device>           m_d3d11_device;
