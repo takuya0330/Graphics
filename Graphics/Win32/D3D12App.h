@@ -11,27 +11,6 @@
 
 #include "Win32App.h"
 
-#define RETURN_HRESULT_IF_FAILED(hr)             \
-	if (FAILED(hr))                              \
-	{                                            \
-		printf("ERROR: HRESULT = 0x%08X\n", hr); \
-		return hr;                               \
-	}
-
-#define RETURN_FALSE_IF_FAILED(hr)               \
-	if (FAILED(hr))                              \
-	{                                            \
-		printf("ERROR: HRESULT = 0x%08X\n", hr); \
-		return false;                            \
-	}
-
-#define ASSERT_IF_FAILED(hr)                     \
-	if (FAILED(hr))                              \
-	{                                            \
-		printf("ERROR: HRESULT = 0x%08X\n", hr); \
-		assert(SUCCEEDED(hr));                   \
-	}
-
 class D3D12App : public Win32App
 {
 public:

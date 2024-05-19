@@ -5,15 +5,7 @@
 
 #include <Windows.h>
 
-#include <cassert>
-#include <iostream>
-
-#define ASSERT_RETURN(expr, ...) \
-	if (!(expr))                 \
-	{                            \
-		assert(expr);            \
-		return __VA_ARGS__;      \
-	}
+#include "Debug.h"
 
 class Win32App
 {
