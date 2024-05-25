@@ -5,16 +5,17 @@
 
 #include <Windows.h>
 
+#include "CoreApp.h"
 #include "Debug.h"
 
-class Win32App
+class Win32App : public CoreApp
 {
 public:
 	Win32App(LPCWSTR title, UINT width, UINT height);
 
 	virtual ~Win32App() = default;
 
-	int Run();
+	int Run() final override;
 
 protected:
 	virtual bool OnInitialize();
@@ -24,8 +25,6 @@ protected:
 	virtual void OnUpdate();
 
 	virtual void OnRender();
-
-	LRESULT CALLBACK OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
 	HWND    m_hwnd;

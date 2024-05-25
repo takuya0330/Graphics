@@ -11,9 +11,13 @@
 #include "D3D11App.h"
 #elif APP_WIN32
 #include "Win32App.h"
+#else
+#include "CoreApp.h"
 #endif
 
 #include <crtdbg.h>
+
+#include <memory>
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
 {
@@ -21,16 +25,24 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-    constexpr UINT kWidth  = 1280;
+	constexpr UINT kWidth  = 1280;
 	constexpr UINT kHeight = 720;
 
+    int ret = 0;
+	{
+		std::unique_ptr<CoreApp> app;
 #if 0
 #elif APP_D3D12
-	D3D12App app(L"D3D12 App", kWidth, kHeight);
+		app = std::make_unique<D3D12App>(L"D3D12 App", kWidth, kHeight);
 #elif APP_D3D11
-	D3D11App app(L"D3D11 App", kWidth, kHeight);
+		app = std::make_unique<D3D11App>(L"D3D11 App", kWidth, kHeight);
 #elif APP_WIN32
-	Win32App app(L"Win32 App", kWidth, kHeight);
+		app = std::make_unique<Win32App>(L"Win32 App", kWidth, kHeight);
+#else
+		app = std::make_unique<CoreApp>();
 #endif
-	return app.Run();
+		ret = app->Run();
+	}
+
+	return ret;
 }

@@ -114,5 +114,14 @@ LRESULT CALLBACK Win32App::OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	auto app = reinterpret_cast<Win32App*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-	return app ? app->OnWindowProc(hWnd, uMsg, wParam, lParam) : ::DefWindowProc(hWnd, uMsg, wParam, lParam);
+
+	switch (uMsg)
+	{
+	case WM_DESTROY:
+		::PostQuitMessage(0);
+		break;
+	default:
+		return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
+	}
+	return 0;
 }
