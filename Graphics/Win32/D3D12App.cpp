@@ -229,6 +229,14 @@ bool D3D12App::OnInitialize()
 
 void D3D12App::OnFinalize()
 {
+	m_gfx_cmd_queue->Signal(m_fence.Get(), ++m_fence_value);
+	if (m_fence->GetCompletedValue() < m_fence_value)
+	{
+		auto event = ::CreateEvent(nullptr, false, false, nullptr);
+		m_fence->SetEventOnCompletion(m_fence_value, event);
+		::WaitForSingleObject(event, INFINITE);
+		::CloseHandle(event);
+	}
 }
 
 void D3D12App::OnUpdate()
@@ -236,12 +244,6 @@ void D3D12App::OnUpdate()
 }
 
 void D3D12App::OnRender()
-{
-	BeginFrame();
-	EndFrame();
-}
-
-void D3D12App::BeginFrame()
 {
 	HRESULT hr = S_OK;
 
@@ -297,13 +299,8 @@ void D3D12App::BeginFrame()
 
 		m_gfx_cmd_list->OMSetRenderTargets(1, &rtv, false, nullptr);
 	}
-}
 
-void D3D12App::EndFrame()
-{
-	HRESULT hr = S_OK;
-
-	{
+    {
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -320,9 +317,8 @@ void D3D12App::EndFrame()
 
 		ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list.Get() };
 		m_gfx_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), cmd_lists);
-		m_gfx_cmd_queue->Signal(m_fence.Get(), ++m_fence_value);
 
-		auto value = m_fence->GetCompletedValue();
+        m_gfx_cmd_queue->Signal(m_fence.Get(), ++m_fence_value);
 		if (m_fence->GetCompletedValue() < m_fence_value)
 		{
 			auto event = ::CreateEvent(nullptr, false, false, nullptr);

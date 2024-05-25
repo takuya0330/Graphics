@@ -14,18 +14,6 @@
 class D3D11App : public Win32App
 {
 public:
-	static constexpr UINT kBackBufferCount = 2;
-
-	template<class T>
-	using ComPtr = Microsoft::WRL::ComPtr<T>;
-
-	template<class T>
-	using Array2 = std::array<T, kBackBufferCount>;
-
-	template<class T>
-	using ComPtr2 = Array2<ComPtr<T>>;
-
-public:
 	D3D11App(LPCWSTR title, UINT width, UINT height);
 
 	virtual ~D3D11App() override = default;
@@ -40,9 +28,16 @@ protected:
 	virtual void OnRender() override;
 
 protected:
-	virtual void BeginFrame();
+	static constexpr UINT kBackBufferCount = 2;
 
-    virtual void EndFrame();
+	template<class T>
+	using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+	template<class T>
+	using Array2 = std::array<T, kBackBufferCount>;
+
+	template<class T>
+	using ComPtr2 = Array2<ComPtr<T>>;
 
 protected:
 	ComPtr<ID3D11Device>           m_d3d11_device;

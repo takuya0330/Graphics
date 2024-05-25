@@ -65,7 +65,7 @@ bool D3D11App::OnInitialize()
 			hr = D3D11CreateDevice(dxgi_adapter.Get(), driver_type, nullptr, create_device_flags, kFeatureLevels, _countof(kFeatureLevels), D3D11_SDK_VERSION, m_d3d11_device.GetAddressOf(), &current_feature_level, m_d3d11_immediate_context.GetAddressOf());
 			if (SUCCEEDED(hr))
 				break;
-            RETURN_FALSE_IF_FAILED(hr);
+			RETURN_FALSE_IF_FAILED(hr);
 		}
 	}
 
@@ -103,12 +103,12 @@ bool D3D11App::OnInitialize()
 
 		hr = m_d3d11_device->CreateRenderTargetView(back_buffer.Get(), nullptr, m_d3d11_render_target_view.GetAddressOf());
 		RETURN_FALSE_IF_FAILED(hr);
-    }
+	}
 
-    {
+	{
 		ComPtr<ID3D11Texture2D> depth_buffer;
 		D3D11_TEXTURE2D_DESC    depth_buffer_desc = {};
-        {
+		{
 			depth_buffer_desc.Width              = m_width;
 			depth_buffer_desc.Height             = m_height;
 			depth_buffer_desc.MipLevels          = 1;
@@ -120,17 +120,17 @@ bool D3D11App::OnInitialize()
 			depth_buffer_desc.BindFlags          = D3D11_BIND_DEPTH_STENCIL;
 			depth_buffer_desc.CPUAccessFlags     = 0;
 			depth_buffer_desc.MiscFlags          = 0;
-        }
+		}
 		hr = m_d3d11_device->CreateTexture2D(&depth_buffer_desc, 0, depth_buffer.GetAddressOf());
 		RETURN_FALSE_IF_FAILED(hr);
 
-        D3D11_DEPTH_STENCIL_VIEW_DESC depth_stencil_view_desc = {};
-        {
+		D3D11_DEPTH_STENCIL_VIEW_DESC depth_stencil_view_desc = {};
+		{
 			depth_stencil_view_desc.Format             = DXGI_FORMAT_D24_UNORM_S8_UINT;
 			depth_stencil_view_desc.ViewDimension      = D3D11_DSV_DIMENSION_TEXTURE2D;
 			depth_stencil_view_desc.Flags              = 0;
 			depth_stencil_view_desc.Texture2D.MipSlice = 0;
-        }
+		}
 		hr = m_d3d11_device->CreateDepthStencilView(depth_buffer.Get(), &depth_stencil_view_desc, m_d3d11_depth_stencil_view.GetAddressOf());
 		RETURN_FALSE_IF_FAILED(hr);
 	}
@@ -147,12 +147,6 @@ void D3D11App::OnUpdate()
 }
 
 void D3D11App::OnRender()
-{
-	BeginFrame();
-	EndFrame();
-}
-
-void D3D11App::BeginFrame()
 {
 	{
 		D3D11_VIEWPORT viewport = {
@@ -172,9 +166,6 @@ void D3D11App::BeginFrame()
 		m_d3d11_immediate_context->ClearDepthStencilView(m_d3d11_depth_stencil_view.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		m_d3d11_immediate_context->OMSetRenderTargets(1, m_d3d11_render_target_view.GetAddressOf(), m_d3d11_depth_stencil_view.Get());
 	}
-}
 
-void D3D11App::EndFrame()
-{
 	m_dxgi_swap_chain->Present(1, 0);
 }
