@@ -11,6 +11,15 @@
     <Filter Include="Source\D3D12">
       <UniqueIdentifier>{916c7c8c-6d56-487e-aa0a-5982226fa4ec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="External">
+      <UniqueIdentifier>{949c2a35-ab0b-4de0-9b7c-e04128175d97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\ImGui">
+      <UniqueIdentifier>{838fe2a0-16ec-496c-a26d-fdd9ad5f9613}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\ImGui\backends">
+      <UniqueIdentifier>{8b3841c2-0c08-47b2-bebd-fdfa1490302e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -25,6 +34,33 @@
     <ClCompile Include="Win32App.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="D3D12ImGui.cpp">
+      <Filter>Source\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGui\imgui.cpp">
+      <Filter>External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGui\imgui_demo.cpp">
+      <Filter>External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGui\imgui_draw.cpp">
+      <Filter>External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGui\imgui_tables.cpp">
+      <Filter>External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGui\imgui_widgets.cpp">
+      <Filter>External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGui\backends\imgui_impl_dx11.cpp">
+      <Filter>External\ImGui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGui\backends\imgui_impl_dx12.cpp">
+      <Filter>External\ImGui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ImGui\backends\imgui_impl_win32.cpp">
+      <Filter>External\ImGui\backends</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D3D11App.h">
@@ -35,6 +71,39 @@
     </ClInclude>
     <ClInclude Include="Win32App.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="CoreApp.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12ImGui.h">
+      <Filter>Source\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGui\imconfig.h">
+      <Filter>External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGui\imgui.h">
+      <Filter>External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGui\imgui_internal.h">
+      <Filter>External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGui\imstb_rectpack.h">
+      <Filter>External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGui\imstb_textedit.h">
+      <Filter>External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGui\imstb_truetype.h">
+      <Filter>External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGui\backends\imgui_impl_dx11.h">
+      <Filter>External\ImGui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGui\backends\imgui_impl_dx12.h">
+      <Filter>External\ImGui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ImGui\backends\imgui_impl_win32.h">
+      <Filter>External\ImGui\backends</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

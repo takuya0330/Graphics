@@ -98,10 +98,8 @@ void Win32App::OnRender()
 {
 }
 
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Win32App::OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	auto app = reinterpret_cast<Win32App*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-
 	switch (uMsg)
 	{
 	case WM_DESTROY:
@@ -111,4 +109,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 	return 0;
+}
+
+LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	auto app = reinterpret_cast<Win32App*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+	return app ? app->OnWindowProc(hWnd, uMsg, wParam, lParam) : ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }

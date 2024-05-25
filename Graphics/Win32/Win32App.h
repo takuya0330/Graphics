@@ -26,6 +26,8 @@ protected:
 
 	virtual void OnRender();
 
+    virtual LRESULT CALLBACK OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 protected:
 	HWND    m_hwnd;
 	LPCWSTR m_title;

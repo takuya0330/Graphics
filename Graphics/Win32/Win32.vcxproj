@@ -105,6 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\External;$(ProjectDir)\External\ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -120,6 +121,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\External;$(ProjectDir)\External\ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -131,12 +133,32 @@
   <ItemGroup>
     <ClCompile Include="D3D11App.cpp" />
     <ClCompile Include="D3D12App.cpp" />
+    <ClCompile Include="D3D12ImGui.cpp" />
+    <ClCompile Include="External\ImGui\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="External\ImGui\backends\imgui_impl_dx12.cpp" />
+    <ClCompile Include="External\ImGui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="External\ImGui\imgui.cpp" />
+    <ClCompile Include="External\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="External\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="External\ImGui\imgui_tables.cpp" />
+    <ClCompile Include="External\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Win32App.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CoreApp.h" />
     <ClInclude Include="D3D11App.h" />
     <ClInclude Include="D3D12App.h" />
+    <ClInclude Include="D3D12ImGui.h" />
+    <ClInclude Include="External\ImGui\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="External\ImGui\backends\imgui_impl_dx12.h" />
+    <ClInclude Include="External\ImGui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="External\ImGui\imconfig.h" />
+    <ClInclude Include="External\ImGui\imgui.h" />
+    <ClInclude Include="External\ImGui\imgui_internal.h" />
+    <ClInclude Include="External\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="External\ImGui\imstb_textedit.h" />
+    <ClInclude Include="External\ImGui\imstb_truetype.h" />
     <ClInclude Include="Win32App.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
