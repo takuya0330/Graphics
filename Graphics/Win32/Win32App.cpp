@@ -32,11 +32,11 @@ int Win32App::Run()
 		.lpszClassName = kWindowClassName,
 		.hIconSm       = 0
 	};
-	ASSERT_RETURN(::RegisterClassEx(&wcex), 1);
+	ASSERT_RETURN(::RegisterClassEx(&wcex), EXIT_FAILURE);
 
 	RECT  rect  = { 0, 0, static_cast<LONG>(m_width), static_cast<LONG>(m_height) };
 	DWORD style = WS_OVERLAPPEDWINDOW;
-	ASSERT_RETURN(::AdjustWindowRect(&rect, style, false), 1);
+	ASSERT_RETURN(::AdjustWindowRect(&rect, style, false), EXIT_FAILURE);
 
 	m_hwnd = ::CreateWindowEx(
 	    0,
@@ -51,11 +51,11 @@ int Win32App::Run()
 	    nullptr,
 	    wcex.hInstance,
 	    nullptr);
-	ASSERT_RETURN(m_hwnd, 1);
+	ASSERT_RETURN(m_hwnd, EXIT_FAILURE);
 
 	::SetWindowLongPtr(m_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 
-	ASSERT_RETURN(OnInitialize(), 1);
+	ASSERT_RETURN(OnInitialize(), EXIT_FAILURE);
 
 	::UpdateWindow(m_hwnd);
 	::ShowWindow(m_hwnd, SW_NORMAL);
