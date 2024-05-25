@@ -25,17 +25,8 @@
     <ClCompile Include="WinMain.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="D3D11App.cpp">
-      <Filter>Source\D3D11</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D12App.cpp">
-      <Filter>Source\D3D12</Filter>
-    </ClCompile>
     <ClCompile Include="Win32App.cpp">
       <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D12ImGui.cpp">
-      <Filter>Source\D3D12</Filter>
     </ClCompile>
     <ClCompile Include="External\ImGui\imgui.cpp">
       <Filter>External\ImGui</Filter>
@@ -61,22 +52,22 @@
     <ClCompile Include="External\ImGui\backends\imgui_impl_win32.cpp">
       <Filter>External\ImGui\backends</Filter>
     </ClCompile>
+    <ClCompile Include="D3D11\D3D11App.cpp">
+      <Filter>Source\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\D3D12App.cpp">
+      <Filter>Source\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\D3D12ImGui.cpp">
+      <Filter>Source\D3D12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D3D11App.h">
-      <Filter>Source\D3D11</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12App.h">
-      <Filter>Source\D3D12</Filter>
-    </ClInclude>
     <ClInclude Include="Win32App.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="CoreApp.h">
       <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12ImGui.h">
-      <Filter>Source\D3D12</Filter>
     </ClInclude>
     <ClInclude Include="External\ImGui\imconfig.h">
       <Filter>External\ImGui</Filter>
@@ -104,6 +95,15 @@
     </ClInclude>
     <ClInclude Include="External\ImGui\backends\imgui_impl_win32.h">
       <Filter>External\ImGui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D11\D3D11App.h">
+      <Filter>Source\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\D3D12App.h">
+      <Filter>Source\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\D3D12ImGui.h">
+      <Filter>Source\D3D12</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

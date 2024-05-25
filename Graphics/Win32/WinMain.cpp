@@ -7,11 +7,11 @@
 
 #if 0
 #elif APP_D3D12_IMGUI
-#include "D3D12ImGui.h"
+#include "D3D12/D3D12ImGui.h"
 #elif APP_D3D12
-#include "D3D12App.h"
+#include "D3D12/D3D12App.h"
 #elif APP_D3D11
-#include "D3D11App.h"
+#include "D3D11/D3D11App.h"
 #elif APP_WIN32
 #include "Win32App.h"
 #else
