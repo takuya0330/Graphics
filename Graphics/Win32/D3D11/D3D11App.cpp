@@ -27,7 +27,7 @@ bool D3D11App::OnInitialize()
 		std::vector<ComPtr<IDXGIAdapter>> dxgi_adapters;
 		{
 			IDXGIAdapter* dxgi_adapter;
-			for (size_t i = 0; dxgi_factory->EnumAdapters(i, &dxgi_adapter) != DXGI_ERROR_NOT_FOUND; ++i)
+			for (UINT i = 0; dxgi_factory->EnumAdapters(i, &dxgi_adapter) != DXGI_ERROR_NOT_FOUND; ++i)
 			{
 				dxgi_adapters.emplace_back(dxgi_adapter);
 			}

@@ -119,7 +119,7 @@ bool D3D12App::OnInitialize()
 			.Width       = m_width,
 			.Height      = m_height,
 			.Format      = DXGI_FORMAT_R8G8B8A8_UNORM,
-			.Stereo      = true,
+			.Stereo      = false,
 			.SampleDesc  = {.Count = 1, .Quality = 0},
 			.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
 			.BufferCount = kBackBufferCount,
