@@ -18,11 +18,14 @@ protected:
 
 	virtual void OnRender() override;
 
-    virtual LRESULT CALLBACK OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+	virtual LRESULT CALLBACK OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+protected:
+	void renderImGui();
 
 private:
 	ComPtr<ID3D12DescriptorHeap> m_imgui_heap;
 #if ENABLE_IMGUI_DEMO_WINDOW
-	bool                         m_enable_demo_window;
+	bool m_enable_demo_window;
 #endif
 };
