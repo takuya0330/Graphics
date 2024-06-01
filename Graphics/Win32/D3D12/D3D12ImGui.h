@@ -2,8 +2,6 @@
 
 #include "D3D12App.h"
 
-#define ENABLE_IMGUI_DEMO_WINDOW 0
-
 class D3D12ImGui : public D3D12App
 {
 public:

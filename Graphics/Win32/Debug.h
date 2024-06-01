@@ -32,3 +32,5 @@
 		printf("ERROR: HRESULT = 0x%08X\n", hr); \
 		return false;                            \
 	}
+
+#define ENABLE_IMGUI_DEMO_WINDOW 0
