@@ -15,8 +15,8 @@ D3D12App::D3D12App(LPCWSTR title, UINT width, UINT height)
     , m_back_buffers()
     , m_dsv_heap()
     , m_depth_buffer()
-    , m_fence()
-    , m_fence_value(0)
+    , m_fences()
+    , m_fence_values()
 {
 }
 
@@ -137,6 +137,8 @@ bool D3D12App::OnInitialize()
 
 		hr = dxgi_swap_chain1.As(&m_swap_chain4);
 		RETURN_FALSE_IF_FAILED(hr);
+
+		m_back_buffer_index = m_swap_chain4->GetCurrentBackBufferIndex();
 	}
 
 	{
@@ -218,10 +220,12 @@ bool D3D12App::OnInitialize()
 	}
 
 	{
-		hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_fence.GetAddressOf()));
-		RETURN_FALSE_IF_FAILED(hr);
-
-		m_fence_value = 0;
+		for (auto& fence : m_fences)
+		{
+			hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf()));
+			RETURN_FALSE_IF_FAILED(hr);
+		}
+		m_fence_values.fill(0);
 	}
 
 	return true;
@@ -229,14 +233,7 @@ bool D3D12App::OnInitialize()
 
 void D3D12App::OnFinalize()
 {
-	m_gfx_cmd_queue->Signal(m_fence.Get(), ++m_fence_value);
-	if (m_fence->GetCompletedValue() < m_fence_value)
-	{
-		auto event = ::CreateEvent(nullptr, false, false, nullptr);
-		m_fence->SetEventOnCompletion(m_fence_value, event);
-		::WaitForSingleObject(event, INFINITE);
-		::CloseHandle(event);
-	}
+	waitForGPU();
 }
 
 void D3D12App::OnUpdate()
@@ -245,88 +242,125 @@ void D3D12App::OnUpdate()
 
 void D3D12App::OnRender()
 {
-	HRESULT hr = S_OK;
+	reset();
+	setViewport(static_cast<float>(m_width), static_cast<float>(m_height));
+	setScissorRect(static_cast<LONG>(m_width), static_cast<LONG>(m_height));
+	setBackBuffer();
+	executeCommandList();
+	present(1);
+	waitPreviousFrame();
+}
 
-	m_back_buffer_index = m_swap_chain4->GetCurrentBackBufferIndex();
+void D3D12App::reset()
+{
+	auto hr = m_gfx_cmd_allocators.at(m_back_buffer_index)->Reset();
+	ASSERT_IF_FAILED(hr);
+
+	hr = m_gfx_cmd_list->Reset(m_gfx_cmd_allocators.at(m_back_buffer_index).Get(), nullptr);
+	ASSERT_IF_FAILED(hr);
+
+	D3D12_RESOURCE_BARRIER barrier = {};
 	{
-		hr = m_gfx_cmd_allocators.at(m_back_buffer_index)->Reset();
-		ASSERT_IF_FAILED(hr);
-
-		hr = m_gfx_cmd_list->Reset(m_gfx_cmd_allocators.at(m_back_buffer_index).Get(), nullptr);
-		ASSERT_IF_FAILED(hr);
-	}
-
-	{
-		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 		barrier.Transition.pResource   = m_back_buffers.at(m_back_buffer_index).Get();
 		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 		barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		m_gfx_cmd_list->ResourceBarrier(1, &barrier);
 	}
+	m_gfx_cmd_list->ResourceBarrier(1, &barrier);
+}
 
+void D3D12App::setViewport(float width, float height)
+{
+	D3D12_VIEWPORT viewport = {
+		.TopLeftX = 0,
+		.TopLeftY = 0,
+		.Width    = width,
+		.Height   = height,
+		.MinDepth = 0.0f,
+		.MaxDepth = 1.0f
+	};
+	m_gfx_cmd_list->RSSetViewports(1, &viewport);
+}
+
+void D3D12App::setScissorRect(LONG width, LONG height)
+{
+	D3D12_RECT scissor = {
+		.left   = 0,
+		.top    = 0,
+		.right  = width,
+		.bottom = height
+	};
+	m_gfx_cmd_list->RSSetScissorRects(1, &scissor);
+}
+
+void D3D12App::setBackBuffer()
+{
+	auto rtv = m_rtv_heap->GetCPUDescriptorHandleForHeapStart();
+	rtv.ptr += static_cast<SIZE_T>(m_rtv_heap_size * m_back_buffer_index);
+
+	constexpr float kClearColor[] = { 0, 0, 0, 1 };
+	m_gfx_cmd_list->ClearRenderTargetView(rtv, kClearColor, 0, nullptr);
+
+	auto dsv = m_dsv_heap->GetCPUDescriptorHandleForHeapStart();
+	m_gfx_cmd_list->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+	m_gfx_cmd_list->OMSetRenderTargets(1, &rtv, false, nullptr);
+}
+
+void D3D12App::executeCommandList()
+{
+	D3D12_RESOURCE_BARRIER barrier = {};
 	{
-		D3D12_VIEWPORT viewport = {
-			.TopLeftX = 0,
-			.TopLeftY = 0,
-			.Width    = static_cast<float>(m_width),
-			.Height   = static_cast<float>(m_height),
-			.MinDepth = 0.0f,
-			.MaxDepth = 1.0f
-		};
-		m_gfx_cmd_list->RSSetViewports(1, &viewport);
-
-		D3D12_RECT scissor = {
-			.left   = 0,
-			.top    = 0,
-			.right  = static_cast<LONG>(m_width),
-			.bottom = static_cast<LONG>(m_height)
-		};
-		m_gfx_cmd_list->RSSetScissorRects(1, &scissor);
-	}
-
-	{
-		auto rtv = m_rtv_heap->GetCPUDescriptorHandleForHeapStart();
-		rtv.ptr += static_cast<SIZE_T>(m_rtv_heap_size * m_back_buffer_index);
-
-		constexpr float kClearColor[] = { 0, 0, 0, 1 };
-		m_gfx_cmd_list->ClearRenderTargetView(rtv, kClearColor, 0, nullptr);
-
-		auto dsv = m_dsv_heap->GetCPUDescriptorHandleForHeapStart();
-		m_gfx_cmd_list->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-
-		m_gfx_cmd_list->OMSetRenderTargets(1, &rtv, false, nullptr);
-	}
-
-    {
-		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 		barrier.Transition.pResource   = m_back_buffers.at(m_back_buffer_index).Get();
 		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_PRESENT;
-		m_gfx_cmd_list->ResourceBarrier(1, &barrier);
 	}
+	m_gfx_cmd_list->ResourceBarrier(1, &barrier);
 
+	auto hr = m_gfx_cmd_list->Close();
+	ASSERT_IF_FAILED(hr);
+
+	ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list.Get() };
+	m_gfx_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), cmd_lists);
+	m_gfx_cmd_queue->Signal(m_fences.at(m_back_buffer_index).Get(), ++m_fence_values.at(m_back_buffer_index));
+}
+
+void D3D12App::present(UINT sync_interval)
+{
+	m_swap_chain4->Present(sync_interval, 0);
+}
+
+void D3D12App::waitPreviousFrame()
+{
+	m_back_buffer_index = m_swap_chain4->GetCurrentBackBufferIndex();
+	if (m_fences.at(m_back_buffer_index)->GetCompletedValue() < m_fence_values.at(m_back_buffer_index))
 	{
-		hr = m_gfx_cmd_list->Close();
-		ASSERT_IF_FAILED(hr);
-
-		ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list.Get() };
-		m_gfx_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), cmd_lists);
-
-        m_gfx_cmd_queue->Signal(m_fence.Get(), ++m_fence_value);
-		if (m_fence->GetCompletedValue() < m_fence_value)
-		{
-			auto event = ::CreateEvent(nullptr, false, false, nullptr);
-			m_fence->SetEventOnCompletion(m_fence_value, event);
-			::WaitForSingleObject(event, INFINITE);
-			::CloseHandle(event);
-		}
-
-		m_swap_chain4->Present(1, 0);
+		auto event = ::CreateEvent(nullptr, false, false, nullptr);
+		m_fences.at(m_back_buffer_index)->SetEventOnCompletion(m_fence_values.at(m_back_buffer_index), event);
+		::WaitForSingleObject(event, INFINITE);
+		::CloseHandle(event);
 	}
+}
+
+void D3D12App::waitForGPU()
+{
+	ComPtr<ID3D12Fence> fence;
+	constexpr UINT64    expect_value = 1;
+
+	auto hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf()));
+	ASSERT_IF_FAILED(hr);
+
+	m_gfx_cmd_queue->Signal(fence.Get(), expect_value);
+    if (fence->GetCompletedValue() != expect_value)
+    {
+		auto event = ::CreateEvent(nullptr, false, false, nullptr);
+		fence->SetEventOnCompletion(expect_value, event);
+		::WaitForSingleObject(event, INFINITE);
+		::CloseHandle(event);
+    }
 }

@@ -28,6 +28,23 @@ protected:
 	virtual void OnRender() override;
 
 protected:
+	void reset();
+
+    void setViewport(float width, float height);
+
+    void setScissorRect(LONG width, LONG height);
+
+    void setBackBuffer();
+
+	void executeCommandList();
+
+    void present(UINT sync_interval);
+
+    void waitPreviousFrame();
+
+    void waitForGPU();
+
+protected:
 	static constexpr UINT kBackBufferCount = 2;
 
 	template<class T>
@@ -51,6 +68,6 @@ protected:
 	ComPtr2<ID3D12Resource>           m_back_buffers;
 	ComPtr<ID3D12DescriptorHeap>      m_dsv_heap;
 	ComPtr<ID3D12Resource>            m_depth_buffer;
-	ComPtr<ID3D12Fence>               m_fence;
-	UINT64                            m_fence_value;
+	ComPtr2<ID3D12Fence>              m_fences;
+	Array2<UINT64>                    m_fence_values;
 };
