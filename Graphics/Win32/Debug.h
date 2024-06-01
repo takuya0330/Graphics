@@ -5,6 +5,50 @@
 #include <cassert>
 #include <iostream>
 
+namespace Debug {
+
+#ifdef _CONSOLE
+inline void Print(const char* msg)
+{
+	printf("%s", msg);
+}
+inline void Print(const wchar_t* msg)
+{
+	wprintf(L"%ws", msg);
+}
+#else
+inline void Print(const char* msg)
+{
+	OutputDebugStringA(msg);
+}
+inline void Print(const wchar_t* msg)
+{
+	OutputDebugStringW(msg);
+}
+#endif
+
+inline void Log(const char* format, ...)
+{
+	char    buffer[256];
+	va_list ap;
+	va_start(ap, format);
+	vsprintf_s(buffer, 256, format, ap);
+	va_end(ap);
+	Print(buffer);
+}
+
+inline void Log(const wchar_t* format, ...)
+{
+	wchar_t buffer[256];
+	va_list ap;
+	va_start(ap, format);
+	vswprintf(buffer, 256, format, ap);
+	va_end(ap);
+	Print(buffer);
+}
+
+} // namespace Debug
+
 #define ASSERT_RETURN(expr, ...) \
 	do                           \
 	{                            \
@@ -15,34 +59,34 @@
 		}                        \
 	} while (false)
 
-#define ASSERT_IF_FAILED(hr)                         \
-	do                                               \
-	{                                                \
-		if (FAILED(hr))                              \
-		{                                            \
-			printf("ERROR: HRESULT = 0x%08X\n", hr); \
-			assert(SUCCEEDED(hr));                   \
-		}                                            \
+#define ASSERT_IF_FAILED(hr)                              \
+	do                                                    \
+	{                                                     \
+		if (FAILED(hr))                                   \
+		{                                                 \
+			Debug::Log(L"ERROR: HRESULT = 0x%08X\n", hr); \
+			assert(SUCCEEDED(hr));                        \
+		}                                                 \
 	} while (false)
 
-#define RETURN_HRESULT_IF_FAILED(hr)                 \
-	do                                               \
-	{                                                \
-		if (FAILED(hr))                              \
-		{                                            \
-			printf("ERROR: HRESULT = 0x%08X\n", hr); \
-			return hr;                               \
-		}                                            \
+#define RETURN_HRESULT_IF_FAILED(hr)                      \
+	do                                                    \
+	{                                                     \
+		if (FAILED(hr))                                   \
+		{                                                 \
+			Debug::Log(L"ERROR: HRESULT = 0x%08X\n", hr); \
+			return hr;                                    \
+		}                                                 \
 	} while (false)
 
-#define RETURN_FALSE_IF_FAILED(hr)                   \
-	do                                               \
-	{                                                \
-		if (FAILED(hr))                              \
-		{                                            \
-			printf("ERROR: HRESULT = 0x%08X\n", hr); \
-			return false;                            \
-		}                                            \
+#define RETURN_FALSE_IF_FAILED(hr)                        \
+	do                                                    \
+	{                                                     \
+		if (FAILED(hr))                                   \
+		{                                                 \
+			Debug::Log(L"ERROR: HRESULT = 0x%08X\n", hr); \
+			return false;                                 \
+		}                                                 \
 	} while (false)
 
 #define ENABLE_IMGUI_DEMO_WINDOW 0
