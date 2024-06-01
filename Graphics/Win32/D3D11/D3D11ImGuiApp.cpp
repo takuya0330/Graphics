@@ -1,4 +1,4 @@
-﻿#include "D3D11ImGui.h"
+﻿#include "D3D11ImGuiApp.h"
 
 // clang-format off
 #include "External/ImGui/imgui.h"
@@ -8,7 +8,7 @@
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-D3D11ImGui::D3D11ImGui(LPCWSTR title, UINT width, UINT height)
+D3D11ImGuiApp::D3D11ImGuiApp(LPCWSTR title, UINT width, UINT height)
     : D3D11App(title, width, height)
 #if ENABLE_IMGUI_DEMO_WINDOW
     , m_enable_demo_window(true)
@@ -16,7 +16,7 @@ D3D11ImGui::D3D11ImGui(LPCWSTR title, UINT width, UINT height)
 {
 }
 
-bool D3D11ImGui::OnInitialize()
+bool D3D11ImGuiApp::OnInitialize()
 {
 	ASSERT_RETURN(D3D11App::OnInitialize(), false);
 
@@ -29,7 +29,7 @@ bool D3D11ImGui::OnInitialize()
     return true;
 }
 
-void D3D11ImGui::OnFinalize()
+void D3D11ImGuiApp::OnFinalize()
 {
 	D3D11App::OnFinalize();
 
@@ -38,7 +38,7 @@ void D3D11ImGui::OnFinalize()
 	ImGui::DestroyContext();
 }
 
-void D3D11ImGui::OnUpdate()
+void D3D11ImGuiApp::OnUpdate()
 {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -52,7 +52,7 @@ void D3D11ImGui::OnUpdate()
 #endif
 }
 
-void D3D11ImGui::OnRender()
+void D3D11ImGuiApp::OnRender()
 {
 	{
 		D3D11_VIEWPORT viewport = {
@@ -81,7 +81,7 @@ void D3D11ImGui::OnRender()
 	m_dxgi_swap_chain->Present(1, 0);
 }
 
-LRESULT CALLBACK D3D11ImGui::OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK D3D11ImGuiApp::OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
 		return true;

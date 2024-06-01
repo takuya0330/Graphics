@@ -2,12 +2,12 @@
 
 #include "D3D11App.h"
 
-class D3D11ImGui : public D3D11App
+class D3D11ImGuiApp : public D3D11App
 {
 public:
-	D3D11ImGui(LPCWSTR title, UINT width, UINT height);
+	D3D11ImGuiApp(LPCWSTR title, UINT width, UINT height);
 
-	virtual ~D3D11ImGui() override = default;
+	virtual ~D3D11ImGuiApp() override = default;
 
 protected:
 	virtual bool OnInitialize() override;

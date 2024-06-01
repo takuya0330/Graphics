@@ -132,9 +132,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="D3D11\D3D11App.cpp" />
-    <ClCompile Include="D3D11\D3D11ImGui.cpp" />
+    <ClCompile Include="D3D11\D3D11ImGuiApp.cpp" />
     <ClCompile Include="D3D12\D3D12App.cpp" />
-    <ClCompile Include="D3D12\D3D12ImGui.cpp" />
+    <ClCompile Include="D3D12\D3D12ImGuiApp.cpp" />
+    <ClCompile Include="D3D12\D3D12TriangleApp.cpp" />
     <ClCompile Include="External\ImGui\backends\imgui_impl_dx11.cpp" />
     <ClCompile Include="External\ImGui\backends\imgui_impl_dx12.cpp" />
     <ClCompile Include="External\ImGui\backends\imgui_impl_win32.cpp" />
@@ -149,9 +150,10 @@
   <ItemGroup>
     <ClInclude Include="CoreApp.h" />
     <ClInclude Include="D3D11\D3D11App.h" />
-    <ClInclude Include="D3D11\D3D11ImGui.h" />
+    <ClInclude Include="D3D11\D3D11ImGuiApp.h" />
     <ClInclude Include="D3D12\D3D12App.h" />
-    <ClInclude Include="D3D12\D3D12ImGui.h" />
+    <ClInclude Include="D3D12\D3D12ImGuiApp.h" />
+    <ClInclude Include="D3D12\D3D12TriangleApp.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="External\ImGui\backends\imgui_impl_dx11.h" />
     <ClInclude Include="External\ImGui\backends\imgui_impl_dx12.h" />

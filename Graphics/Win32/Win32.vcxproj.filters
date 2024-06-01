@@ -58,11 +58,14 @@
     <ClCompile Include="D3D12\D3D12App.cpp">
       <Filter>Source\D3D12</Filter>
     </ClCompile>
-    <ClCompile Include="D3D12\D3D12ImGui.cpp">
+    <ClCompile Include="D3D12\D3D12ImGuiApp.cpp">
       <Filter>Source\D3D12</Filter>
     </ClCompile>
-    <ClCompile Include="D3D11\D3D11ImGui.cpp">
+    <ClCompile Include="D3D11\D3D11ImGuiApp.cpp">
       <Filter>Source\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D12\D3D12TriangleApp.cpp">
+      <Filter>Source\D3D12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -105,14 +108,17 @@
     <ClInclude Include="D3D12\D3D12App.h">
       <Filter>Source\D3D12</Filter>
     </ClInclude>
-    <ClInclude Include="D3D12\D3D12ImGui.h">
+    <ClInclude Include="D3D12\D3D12ImGuiApp.h">
       <Filter>Source\D3D12</Filter>
     </ClInclude>
-    <ClInclude Include="D3D11\D3D11ImGui.h">
+    <ClInclude Include="D3D11\D3D11ImGuiApp.h">
       <Filter>Source\D3D11</Filter>
     </ClInclude>
     <ClInclude Include="Debug.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D12\D3D12TriangleApp.h">
+      <Filter>Source\D3D12</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

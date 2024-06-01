@@ -1,4 +1,4 @@
-﻿#include "D3D12ImGui.h"
+﻿#include "D3D12ImGuiApp.h"
 
 // clang-format off
 #include "External/ImGui/imgui.h"
@@ -8,7 +8,7 @@
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-D3D12ImGui::D3D12ImGui(LPCWSTR title, UINT width, UINT height)
+D3D12ImGuiApp::D3D12ImGuiApp(LPCWSTR title, UINT width, UINT height)
     : D3D12App(title, width, height)
     , m_imgui_heap()
 #if ENABLE_IMGUI_DEMO_WINDOW
@@ -17,7 +17,7 @@ D3D12ImGui::D3D12ImGui(LPCWSTR title, UINT width, UINT height)
 {
 }
 
-bool D3D12ImGui::OnInitialize()
+bool D3D12ImGuiApp::OnInitialize()
 {
 	ASSERT_RETURN(D3D12App::OnInitialize(), false);
 
@@ -42,7 +42,7 @@ bool D3D12ImGui::OnInitialize()
 	return true;
 }
 
-void D3D12ImGui::OnFinalize()
+void D3D12ImGuiApp::OnFinalize()
 {
 	D3D12App::OnFinalize();
 
@@ -51,7 +51,7 @@ void D3D12ImGui::OnFinalize()
 	ImGui::DestroyContext();
 }
 
-void D3D12ImGui::OnUpdate()
+void D3D12ImGuiApp::OnUpdate()
 {
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -65,7 +65,7 @@ void D3D12ImGui::OnUpdate()
 #endif
 }
 
-void D3D12ImGui::OnRender()
+void D3D12ImGuiApp::OnRender()
 {
 	reset();
 	setViewport(static_cast<float>(m_width), static_cast<float>(m_height));
@@ -77,7 +77,7 @@ void D3D12ImGui::OnRender()
 	waitPreviousFrame();
 }
 
-LRESULT CALLBACK D3D12ImGui::OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK D3D12ImGuiApp::OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
 		return true;
@@ -85,7 +85,7 @@ LRESULT CALLBACK D3D12ImGui::OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 	return Win32App::OnWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-void D3D12ImGui::renderImGui()
+void D3D12ImGuiApp::renderImGui()
 {
 	ImGui::Render();
 

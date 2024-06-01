@@ -2,12 +2,12 @@
 
 #include "D3D12App.h"
 
-class D3D12ImGui : public D3D12App
+class D3D12ImGuiApp : public D3D12App
 {
 public:
-	D3D12ImGui(LPCWSTR title, UINT width, UINT height);
+	D3D12ImGuiApp(LPCWSTR title, UINT width, UINT height);
 
-	virtual ~D3D12ImGui() override = default;
+	virtual ~D3D12ImGuiApp() override = default;
 
 protected:
 	virtual bool OnInitialize() override;
