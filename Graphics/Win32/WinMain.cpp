@@ -2,6 +2,7 @@
 
 #define APP_WIN32       1
 #define APP_D3D11       1
+#define APP_D3D11_IMGUI 1
 #define APP_D3D12       1
 #define APP_D3D12_IMGUI 1
 
@@ -10,6 +11,8 @@
 #include "D3D12/D3D12ImGui.h"
 #elif APP_D3D12
 #include "D3D12/D3D12App.h"
+#elif APP_D3D11_IMGUI
+#include "D3D11/D3D11ImGui.h"
 #elif APP_D3D11
 #include "D3D11/D3D11App.h"
 #elif APP_WIN32
@@ -39,6 +42,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		app = std::make_unique<D3D12ImGui>(L"D3D12 ImGui", kWidth, kHeight);
 #elif APP_D3D12
 		app = std::make_unique<D3D12App>(L"D3D12 App", kWidth, kHeight);
+#elif APP_D3D11_IMGUI
+		app = std::make_unique<D3D11ImGui>(L"D3D11 ImGui", kWidth, kHeight);
 #elif APP_D3D11
 		app = std::make_unique<D3D11App>(L"D3D11 App", kWidth, kHeight);
 #elif APP_WIN32
