@@ -64,9 +64,6 @@
     <ClCompile Include="D3D11\D3D11ImGuiApp.cpp">
       <Filter>Source\D3D11</Filter>
     </ClCompile>
-    <ClCompile Include="D3D12\D3D12TriangleApp.cpp">
-      <Filter>Source\D3D12</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win32App.h">
@@ -116,9 +113,6 @@
     </ClInclude>
     <ClInclude Include="Debug.h">
       <Filter>Source</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12\D3D12TriangleApp.h">
-      <Filter>Source\D3D12</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

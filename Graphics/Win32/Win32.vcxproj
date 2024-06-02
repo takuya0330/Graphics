@@ -70,6 +70,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)Bin\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)Bin\$(Configuration)\</OutDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -135,7 +141,6 @@
     <ClCompile Include="D3D11\D3D11ImGuiApp.cpp" />
     <ClCompile Include="D3D12\D3D12App.cpp" />
     <ClCompile Include="D3D12\D3D12ImGuiApp.cpp" />
-    <ClCompile Include="D3D12\D3D12TriangleApp.cpp" />
     <ClCompile Include="External\ImGui\backends\imgui_impl_dx11.cpp" />
     <ClCompile Include="External\ImGui\backends\imgui_impl_dx12.cpp" />
     <ClCompile Include="External\ImGui\backends\imgui_impl_win32.cpp" />
@@ -153,7 +158,6 @@
     <ClInclude Include="D3D11\D3D11ImGuiApp.h" />
     <ClInclude Include="D3D12\D3D12App.h" />
     <ClInclude Include="D3D12\D3D12ImGuiApp.h" />
-    <ClInclude Include="D3D12\D3D12TriangleApp.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="External\ImGui\backends\imgui_impl_dx11.h" />
     <ClInclude Include="External\ImGui\backends\imgui_impl_dx12.h" />
