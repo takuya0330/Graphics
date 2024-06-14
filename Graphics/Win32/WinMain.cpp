@@ -1,19 +1,18 @@
 ﻿// https://learn.microsoft.com/ja-jp/windows/win32/learnwin32/winmain--the-application-entry-point
 
-#define APP_WIN32       1
-#define APP_D3D11       1
-#define APP_D3D11_IMGUI 1
-#define APP_D3D12       1
-#define APP_D3D12_IMGUI 1
+#define APP_WIN32 1
+#define APP_D3D11 1
+#define APP_D3D12 1
+#define APP_IMGUI 1
 
 #if 0
-#elif APP_D3D12_IMGUI
+#elif APP_WIN32 && APP_D3D12 && APP_IMGUI
 #include "D3D12/D3D12ImGuiApp.h"
-#elif APP_D3D12
+#elif APP_WIN32 && APP_D3D12
 #include "D3D12/D3D12App.h"
-#elif APP_D3D11_IMGUI
+#elif APP_WIN32 && APP_D3D11 && APP_IMGUI
 #include "D3D11/D3D11ImGuiApp.h"
-#elif APP_D3D11
+#elif APP_WIN32 && APP_D3D11
 #include "D3D11/D3D11App.h"
 #elif APP_WIN32
 #include "Win32App.h"
