@@ -37,13 +37,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	{
 		std::unique_ptr<CoreApp> app;
 #if 0
-#elif APP_D3D12_IMGUI
+#elif APP_WIN32 && APP_D3D12 && APP_IMGUI
 		app = std::make_unique<D3D12ImGuiApp>(L"D3D12 ImGui", kWidth, kHeight);
-#elif APP_D3D12
+#elif APP_WIN32 && APP_D3D12
 		app = std::make_unique<D3D12App>(L"D3D12 App", kWidth, kHeight);
-#elif APP_D3D11_IMGUI
+#elif APP_WIN32 && APP_D3D11 && APP_IMGUI
 		app = std::make_unique<D3D11ImGuiApp>(L"D3D11 ImGui", kWidth, kHeight);
-#elif APP_D3D11
+#elif APP_WIN32 && APP_D3D11
 		app = std::make_unique<D3D11App>(L"D3D11 App", kWidth, kHeight);
 #elif APP_WIN32
 		app = std::make_unique<Win32App>(L"Win32 App", kWidth, kHeight);
