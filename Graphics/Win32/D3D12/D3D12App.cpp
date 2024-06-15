@@ -468,24 +468,6 @@ bool D3D12App::loadShader(
 {
 	HRESULT hr = S_OK;
 
-#define DXC_LOAD_FILE 1
-
-#if DXC_LOAD_FILE
-#else
-	std::filesystem::path path(filename);
-
-	std::ifstream ifs;
-	ifs.open(path.string().c_str());
-	if (ifs.fail())
-		return false;
-
-	std::vector<char> source;
-	source.resize(std::filesystem::file_size(path));
-	ifs.read(source.data(), source.size());
-
-	ifs.close();
-#endif
-
 	ComPtr<IDxcUtils> utils;
 	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(utils.GetAddressOf()));
 	RETURN_FALSE_IF_FAILED(hr);
@@ -494,16 +476,12 @@ bool D3D12App::loadShader(
 	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(compiler.GetAddressOf()));
 	RETURN_FALSE_IF_FAILED(hr);
 
-    ComPtr<IDxcIncludeHandler> handler;
+	ComPtr<IDxcIncludeHandler> handler;
 	hr = utils->CreateDefaultIncludeHandler(handler.GetAddressOf());
 	RETURN_FALSE_IF_FAILED(hr);
 
 	ComPtr<IDxcBlobEncoding> encoding;
-#if DXC_LOAD_FILE
 	hr = utils->LoadFile(filename, nullptr, encoding.GetAddressOf());
-#else
-	hr = utils->CreateBlob(source.data(), static_cast<uint32_t>(source.size()), CP_ACP, encoding.GetAddressOf());
-#endif
 	RETURN_FALSE_IF_FAILED(hr);
 
 	std::vector<const wchar_t*> args;
@@ -530,7 +508,7 @@ bool D3D12App::loadShader(
 	};
 
 	ComPtr<IDxcResult> result;
-	hr = compiler->Compile(&buffer, args.data(), args.size(), handler.Get(), IID_PPV_ARGS(result.GetAddressOf()));
+	hr = compiler->Compile(&buffer, args.data(), static_cast<UINT32>(args.size()), handler.Get(), IID_PPV_ARGS(result.GetAddressOf()));
 	RETURN_FALSE_IF_FAILED(hr);
 
 	ComPtr<IDxcBlobUtf8> error;
