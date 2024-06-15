@@ -23,9 +23,9 @@ bool D3D12TriangleApp::OnInitialize()
 	ASSERT_RETURN(D3D12App::OnInitialize(), false);
 
 	const Vertex vertices[] = {
-		{ { +0, +1, +0 }, { 1, 0, 0, 1 } },
-		{ { +1, -1, +0 }, { 0, 1, 0, 1 } },
-		{ { -1, -1, +0 }, { 0, 0, 1, 1 } },
+		{{ +0, +1, +0 },  { 1, 0, 0, 1 }},
+		{ { +1, -1, +0 }, { 0, 1, 0, 1 }},
+		{ { -1, -1, +0 }, { 0, 0, 1, 1 }},
 	};
 
 	ComPtr<ID3D12Resource> upload_buffer;
@@ -67,11 +67,11 @@ bool D3D12TriangleApp::OnInitialize()
 		waitForGPU(copy_cmd_queue.Get());
 	}
 
-    ComPtr<IDxcBlob> vs;
+	ComPtr<IDxcBlob> vs;
 	if (!loadShader(L"../../Win32/HLSL/PositionColor_vs.hlsl", L"main", L"vs_6_0", vs.GetAddressOf()))
 		return false;
 
-    ComPtr<IDxcBlob> ps;
+	ComPtr<IDxcBlob> ps;
 	if (!loadShader(L"../../Win32/HLSL/PositionColor_ps.hlsl", L"main", L"ps_6_0", ps.GetAddressOf()))
 		return false;
 
@@ -160,15 +160,15 @@ void D3D12TriangleApp::OnRender()
 		m_gfx_cmd_list->SetGraphicsRootSignature(m_root_signature.Get());
 		m_gfx_cmd_list->SetPipelineState(m_pipeline_state.Get());
 
-        D3D12_VERTEX_BUFFER_VIEW view = {};
-        {
+		D3D12_VERTEX_BUFFER_VIEW view = {};
+		{
 			view.BufferLocation = m_vertex_buffer->GetGPUVirtualAddress();
 			view.SizeInBytes    = sizeof(Vertex) * 3;
 			view.StrideInBytes  = sizeof(Vertex);
-        }
+		}
 		m_gfx_cmd_list->IASetVertexBuffers(0, 1, &view);
-        m_gfx_cmd_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        m_gfx_cmd_list->DrawInstanced(3, 1, 0, 0);
+		m_gfx_cmd_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_gfx_cmd_list->DrawInstanced(3, 1, 0, 0);
 	}
 
 	executeCommandList();
