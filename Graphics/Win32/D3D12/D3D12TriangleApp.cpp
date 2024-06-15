@@ -12,7 +12,9 @@ struct Vertex
 
 D3D12TriangleApp::D3D12TriangleApp(LPCWSTR title, UINT width, UINT height)
     : D3D12App(title, width, height)
-    , m_gpu_vertex_buffer()
+    , m_vertex_buffer()
+    , m_root_signature()
+    , m_pipeline_state()
 {
 }
 
@@ -37,7 +39,7 @@ bool D3D12TriangleApp::OnInitialize()
 		upload_buffer->Unmap(0, nullptr);
 	}
 
-	if (!createBuffer(D3D12_HEAP_TYPE_DEFAULT, sizeof(vertices), D3D12_RESOURCE_STATE_COMMON, m_gpu_vertex_buffer.GetAddressOf()))
+	if (!createBuffer(D3D12_HEAP_TYPE_DEFAULT, sizeof(vertices), D3D12_RESOURCE_STATE_COMMON, m_vertex_buffer.GetAddressOf()))
 		return false;
 
 	{
@@ -56,7 +58,7 @@ bool D3D12TriangleApp::OnInitialize()
 		copy_cmd_allocator->Reset();
 		copy_cmd_list->Reset(copy_cmd_allocator.Get(), nullptr);
 
-		copy_cmd_list->CopyResource(m_gpu_vertex_buffer.Get(), upload_buffer.Get());
+		copy_cmd_list->CopyResource(m_vertex_buffer.Get(), upload_buffer.Get());
 		copy_cmd_list->Close();
 
 		ID3D12CommandList* cmd_lists[] = { copy_cmd_list.Get() };
@@ -65,10 +67,12 @@ bool D3D12TriangleApp::OnInitialize()
 		waitForGPU(copy_cmd_queue.Get());
 	}
 
-	if (!loadShader(L"../../Win32/HLSL/PositionColor_vs.hlsl", L"main", L"vs_6_0", m_blob_vs.GetAddressOf()))
+    ComPtr<IDxcBlob> vs;
+	if (!loadShader(L"../../Win32/HLSL/PositionColor_vs.hlsl", L"main", L"vs_6_0", vs.GetAddressOf()))
 		return false;
 
-	if (!loadShader(L"../../Win32/HLSL/PositionColor_ps.hlsl", L"main", L"ps_6_0", m_blob_ps.GetAddressOf()))
+    ComPtr<IDxcBlob> ps;
+	if (!loadShader(L"../../Win32/HLSL/PositionColor_ps.hlsl", L"main", L"ps_6_0", ps.GetAddressOf()))
 		return false;
 
 	HRESULT hr = S_OK;
@@ -97,10 +101,10 @@ bool D3D12TriangleApp::OnInitialize()
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC gfx_pipeline_state_desc = {};
 	{
 		gfx_pipeline_state_desc.pRootSignature                                   = m_root_signature.Get();
-		gfx_pipeline_state_desc.VS.pShaderBytecode                               = m_blob_vs->GetBufferPointer();
-		gfx_pipeline_state_desc.VS.BytecodeLength                                = m_blob_vs->GetBufferSize();
-		gfx_pipeline_state_desc.PS.pShaderBytecode                               = m_blob_ps->GetBufferPointer();
-		gfx_pipeline_state_desc.PS.BytecodeLength                                = m_blob_ps->GetBufferSize();
+		gfx_pipeline_state_desc.VS.pShaderBytecode                               = vs->GetBufferPointer();
+		gfx_pipeline_state_desc.VS.BytecodeLength                                = vs->GetBufferSize();
+		gfx_pipeline_state_desc.PS.pShaderBytecode                               = ps->GetBufferPointer();
+		gfx_pipeline_state_desc.PS.BytecodeLength                                = ps->GetBufferSize();
 		gfx_pipeline_state_desc.SampleMask                                       = D3D12_DEFAULT_SAMPLE_MASK;
 		gfx_pipeline_state_desc.BlendState.AlphaToCoverageEnable                 = false;
 		gfx_pipeline_state_desc.BlendState.IndependentBlendEnable                = false;
@@ -158,7 +162,7 @@ void D3D12TriangleApp::OnRender()
 
         D3D12_VERTEX_BUFFER_VIEW view = {};
         {
-			view.BufferLocation = m_gpu_vertex_buffer->GetGPUVirtualAddress();
+			view.BufferLocation = m_vertex_buffer->GetGPUVirtualAddress();
 			view.SizeInBytes    = sizeof(Vertex) * 3;
 			view.StrideInBytes  = sizeof(Vertex);
         }

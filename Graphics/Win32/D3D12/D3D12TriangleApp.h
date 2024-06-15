@@ -19,9 +19,7 @@ protected:
 	virtual void OnRender() override;
 
 private:
-	ComPtr<ID3D12Resource>      m_gpu_vertex_buffer;
-	ComPtr<IDxcBlob>            m_blob_vs;
-	ComPtr<IDxcBlob>            m_blob_ps;
+	ComPtr<ID3D12Resource>      m_vertex_buffer;
 	ComPtr<ID3D12RootSignature> m_root_signature;
 	ComPtr<ID3D12PipelineState> m_pipeline_state;
 };
