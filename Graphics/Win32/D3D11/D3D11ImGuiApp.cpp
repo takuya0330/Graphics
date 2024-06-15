@@ -54,31 +54,9 @@ void D3D11ImGuiApp::OnUpdate()
 
 void D3D11ImGuiApp::OnRender()
 {
-	{
-		D3D11_VIEWPORT viewport = {
-			.TopLeftX = 0,
-			.TopLeftY = 0,
-			.Width    = static_cast<float>(m_width),
-			.Height   = static_cast<float>(m_height),
-			.MinDepth = 0.0f,
-			.MaxDepth = 1.0f
-		};
-		m_d3d11_immediate_context->RSSetViewports(1, &viewport);
-	}
-
-	{
-		constexpr float kClearColor[] = { 0, 0, 0, 1 };
-		m_d3d11_immediate_context->ClearRenderTargetView(m_d3d11_render_target_view.Get(), kClearColor);
-		m_d3d11_immediate_context->ClearDepthStencilView(m_d3d11_depth_stencil_view.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		m_d3d11_immediate_context->OMSetRenderTargets(1, m_d3d11_render_target_view.GetAddressOf(), m_d3d11_depth_stencil_view.Get());
-	}
-
-    {
-		ImGui::Render();
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-    }
-
-	m_dxgi_swap_chain->Present(1, 0);
+	setViewport(static_cast<float>(m_width), static_cast<float>(m_height));
+	setBackBuffer();
+	present(1);
 }
 
 LRESULT CALLBACK D3D11ImGuiApp::OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
