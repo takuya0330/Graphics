@@ -1,5 +1,9 @@
 ﻿#include "D3D12App.h"
 
+#include <filesystem>
+#include <fstream>
+#include <vector>
+
 #define ENABLE_GPU_BASED_VALIDATION 0
 
 D3D12App::D3D12App(LPCWSTR title, UINT width, UINT height)
@@ -88,30 +92,17 @@ bool D3D12App::OnInitialize()
 	}
 
 	{
-		D3D12_COMMAND_QUEUE_DESC d3d12_command_queue_desc = {
-			.Type     = D3D12_COMMAND_LIST_TYPE_DIRECT,
-			.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
-			.Flags    = D3D12_COMMAND_QUEUE_FLAG_NONE,
-			.NodeMask = 0
-		};
-		hr = m_device->CreateCommandQueue(&d3d12_command_queue_desc, IID_PPV_ARGS(m_gfx_cmd_queue.GetAddressOf()));
-		RETURN_FALSE_IF_FAILED(hr);
-	}
+		if (!createCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT, m_gfx_cmd_queue.GetAddressOf()))
+			return false;
 
-	{
 		for (auto& allocator : m_gfx_cmd_allocators)
 		{
-			hr = m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(allocator.GetAddressOf()));
-			RETURN_FALSE_IF_FAILED(hr);
+			if (!createCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.GetAddressOf()))
+				return false;
 		}
-	}
 
-	{
-		hr = m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_gfx_cmd_allocators.at(0).Get(), nullptr, IID_PPV_ARGS(m_gfx_cmd_list.GetAddressOf()));
-		RETURN_FALSE_IF_FAILED(hr);
-
-		hr = m_gfx_cmd_list->Close();
-		RETURN_FALSE_IF_FAILED(hr);
+		if (!createCommandList(D3D12_COMMAND_LIST_TYPE_DIRECT, m_gfx_cmd_allocators.at(0).Get(), m_gfx_cmd_list.GetAddressOf()))
+			return false;
 	}
 
 	{
@@ -174,43 +165,24 @@ bool D3D12App::OnInitialize()
 		hr = m_device->CreateDescriptorHeap(&dsv_heap_desc, IID_PPV_ARGS(m_dsv_heap.GetAddressOf()));
 		RETURN_FALSE_IF_FAILED(hr);
 
-		D3D12_HEAP_PROPERTIES d3d12_heap_properties = {
-			.Type                 = D3D12_HEAP_TYPE_DEFAULT,
-			.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
-			.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN,
-			.CreationNodeMask     = 0,
-			.VisibleNodeMask      = 0
-		};
-
-		D3D12_RESOURCE_DESC d3d12_resource_desc = {
-			.Dimension        = D3D12_RESOURCE_DIMENSION_TEXTURE2D,
-			.Alignment        = 0,
-			.Width            = m_width,
-			.Height           = m_height,
-			.DepthOrArraySize = 1,
-			.MipLevels        = 0,
-			.Format           = DXGI_FORMAT_D32_FLOAT,
-			.SampleDesc       = {.Count = 1, .Quality = 0},
-			.Layout           = D3D12_TEXTURE_LAYOUT_UNKNOWN,
-			.Flags            = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL
-		};
-
 		D3D12_CLEAR_VALUE d3d12_clear_value = {
-			.Format       = d3d12_resource_desc.Format,
+			.Format       = DXGI_FORMAT_D32_FLOAT,
 			.DepthStencil = {.Depth = 1.0f, .Stencil = 0}
 		};
 
-		hr = m_device->CreateCommittedResource(
-		    &d3d12_heap_properties,
-		    D3D12_HEAP_FLAG_NONE,
-		    &d3d12_resource_desc,
-		    D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		    &d3d12_clear_value,
-		    IID_PPV_ARGS(m_depth_buffer.GetAddressOf()));
-		RETURN_FALSE_IF_FAILED(hr);
+		if (!createTexture2D(
+		        D3D12_HEAP_TYPE_DEFAULT,
+		        m_width,
+		        m_height,
+		        DXGI_FORMAT_D32_FLOAT,
+		        D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL,
+		        D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		        &d3d12_clear_value,
+		        m_depth_buffer.GetAddressOf()))
+			return false;
 
 		D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc = {
-			.Format        = d3d12_resource_desc.Format,
+			.Format        = DXGI_FORMAT_D32_FLOAT,
 			.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D,
 			.Flags         = D3D12_DSV_FLAG_NONE,
 			.Texture2D     = { .MipSlice = 0 }
@@ -233,7 +205,7 @@ bool D3D12App::OnInitialize()
 
 void D3D12App::OnFinalize()
 {
-	waitForGPU();
+	waitForGPU(m_gfx_cmd_queue.Get());
 }
 
 void D3D12App::OnUpdate()
@@ -327,7 +299,6 @@ void D3D12App::executeCommandList()
 
 	ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list.Get() };
 	m_gfx_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), cmd_lists);
-	m_gfx_cmd_queue->Signal(m_fences.at(m_back_buffer_index).Get(), ++m_fence_values.at(m_back_buffer_index));
 }
 
 void D3D12App::present(UINT sync_interval)
@@ -337,6 +308,8 @@ void D3D12App::present(UINT sync_interval)
 
 void D3D12App::waitPreviousFrame()
 {
+	m_gfx_cmd_queue->Signal(m_fences.at(m_back_buffer_index).Get(), ++m_fence_values.at(m_back_buffer_index));
+
 	m_back_buffer_index = m_swap_chain4->GetCurrentBackBufferIndex();
 	if (m_fences.at(m_back_buffer_index)->GetCompletedValue() < m_fence_values.at(m_back_buffer_index))
 	{
@@ -347,7 +320,7 @@ void D3D12App::waitPreviousFrame()
 	}
 }
 
-void D3D12App::waitForGPU()
+void D3D12App::waitForGPU(ID3D12CommandQueue* cmd_queue)
 {
 	ComPtr<ID3D12Fence> fence;
 	constexpr UINT64    expect_value = 1;
@@ -355,12 +328,223 @@ void D3D12App::waitForGPU()
 	auto hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf()));
 	ASSERT_IF_FAILED(hr);
 
-	m_gfx_cmd_queue->Signal(fence.Get(), expect_value);
-    if (fence->GetCompletedValue() != expect_value)
-    {
+	cmd_queue->Signal(fence.Get(), expect_value);
+	if (fence->GetCompletedValue() != expect_value)
+	{
 		auto event = ::CreateEvent(nullptr, false, false, nullptr);
 		fence->SetEventOnCompletion(expect_value, event);
 		::WaitForSingleObject(event, INFINITE);
 		::CloseHandle(event);
-    }
+	}
+}
+
+bool D3D12App::createCommandQueue(
+    const D3D12_COMMAND_LIST_TYPE type,
+    ID3D12CommandQueue**          cmd_queue)
+{
+	D3D12_COMMAND_QUEUE_DESC command_queue_desc = {
+		.Type     = type,
+		.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
+		.Flags    = D3D12_COMMAND_QUEUE_FLAG_NONE,
+		.NodeMask = 0
+	};
+	auto hr = m_device->CreateCommandQueue(&command_queue_desc, IID_PPV_ARGS(cmd_queue));
+	RETURN_FALSE_IF_FAILED(hr);
+
+	return true;
+}
+
+bool D3D12App::createCommandAllocator(
+    const D3D12_COMMAND_LIST_TYPE type,
+    ID3D12CommandAllocator**      cmd_allocator)
+{
+	auto hr = m_device->CreateCommandAllocator(type, IID_PPV_ARGS(cmd_allocator));
+	RETURN_FALSE_IF_FAILED(hr);
+
+	return true;
+}
+
+bool D3D12App::createCommandList(
+    const D3D12_COMMAND_LIST_TYPE type,
+    ID3D12CommandAllocator*       cmd_allocator,
+    ID3D12GraphicsCommandList**   cmd_list)
+{
+	auto hr = m_device->CreateCommandList(0, type, cmd_allocator, nullptr, IID_PPV_ARGS(cmd_list));
+	RETURN_FALSE_IF_FAILED(hr);
+
+	hr = (*cmd_list)->Close();
+	RETURN_FALSE_IF_FAILED(hr);
+
+	return true;
+}
+
+bool D3D12App::createBuffer(
+    const D3D12_HEAP_TYPE       heap_type,
+    const UINT64                size,
+    const D3D12_RESOURCE_STATES state,
+    ID3D12Resource**            resource)
+{
+	D3D12_HEAP_PROPERTIES heap_properties = {
+		.Type                 = heap_type,
+		.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+		.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN,
+		.CreationNodeMask     = 0,
+		.VisibleNodeMask      = 0
+	};
+
+	D3D12_RESOURCE_DESC resource_desc = {
+		.Dimension        = D3D12_RESOURCE_DIMENSION_BUFFER,
+		.Alignment        = 0,
+		.Width            = size,
+		.Height           = 1,
+		.DepthOrArraySize = 1,
+		.MipLevels        = 1,
+		.Format           = DXGI_FORMAT_UNKNOWN,
+		.SampleDesc       = {.Count = 1, .Quality = 0},
+		.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+		.Flags            = D3D12_RESOURCE_FLAG_NONE
+	};
+
+	auto hr = m_device->CreateCommittedResource(
+	    &heap_properties,
+	    D3D12_HEAP_FLAG_NONE,
+	    &resource_desc,
+	    state,
+	    nullptr,
+	    IID_PPV_ARGS(resource));
+	RETURN_FALSE_IF_FAILED(hr);
+
+	return true;
+}
+
+bool D3D12App::createTexture2D(
+    const D3D12_HEAP_TYPE       heap_type,
+    const UINT64                width,
+    const UINT                  height,
+    const DXGI_FORMAT           format,
+    const D3D12_RESOURCE_FLAGS  flags,
+    const D3D12_RESOURCE_STATES state,
+    const D3D12_CLEAR_VALUE*    clear_value,
+    ID3D12Resource**            resource)
+{
+	D3D12_HEAP_PROPERTIES heap_properties = {
+		.Type                 = heap_type,
+		.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+		.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN,
+		.CreationNodeMask     = 0,
+		.VisibleNodeMask      = 0
+	};
+
+	D3D12_RESOURCE_DESC resource_desc = {
+		.Dimension        = D3D12_RESOURCE_DIMENSION_TEXTURE2D,
+		.Alignment        = 0,
+		.Width            = width,
+		.Height           = height,
+		.DepthOrArraySize = 1,
+		.MipLevels        = 0,
+		.Format           = format,
+		.SampleDesc       = {.Count = 1, .Quality = 0},
+		.Layout           = D3D12_TEXTURE_LAYOUT_UNKNOWN,
+		.Flags            = flags
+	};
+
+	auto hr = m_device->CreateCommittedResource(
+	    &heap_properties,
+	    D3D12_HEAP_FLAG_NONE,
+	    &resource_desc,
+	    state,
+	    clear_value,
+	    IID_PPV_ARGS(resource));
+	RETURN_FALSE_IF_FAILED(hr);
+
+	return true;
+}
+
+bool D3D12App::loadShader(
+    const wchar_t* filename,
+    const wchar_t* entry_point,
+    const wchar_t* shader_model,
+    IDxcBlob**     blob)
+{
+	HRESULT hr = S_OK;
+
+#define DXC_LOAD_FILE 1
+
+#if DXC_LOAD_FILE
+#else
+	std::filesystem::path path(filename);
+
+	std::ifstream ifs;
+	ifs.open(path.string().c_str());
+	if (ifs.fail())
+		return false;
+
+	std::vector<char> source;
+	source.resize(std::filesystem::file_size(path));
+	ifs.read(source.data(), source.size());
+
+	ifs.close();
+#endif
+
+	ComPtr<IDxcUtils> utils;
+	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(utils.GetAddressOf()));
+	RETURN_FALSE_IF_FAILED(hr);
+
+	ComPtr<IDxcCompiler3> compiler;
+	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(compiler.GetAddressOf()));
+	RETURN_FALSE_IF_FAILED(hr);
+
+    ComPtr<IDxcIncludeHandler> handler;
+	hr = utils->CreateDefaultIncludeHandler(handler.GetAddressOf());
+	RETURN_FALSE_IF_FAILED(hr);
+
+	ComPtr<IDxcBlobEncoding> encoding;
+#if DXC_LOAD_FILE
+	hr = utils->LoadFile(filename, nullptr, encoding.GetAddressOf());
+#else
+	hr = utils->CreateBlob(source.data(), static_cast<uint32_t>(source.size()), CP_ACP, encoding.GetAddressOf());
+#endif
+	RETURN_FALSE_IF_FAILED(hr);
+
+	std::vector<const wchar_t*> args;
+	{
+		args.emplace_back(filename);
+
+		args.emplace_back(L"-E");
+		args.emplace_back(entry_point);
+
+		args.emplace_back(L"-T");
+		args.emplace_back(shader_model);
+
+		args.emplace_back(L"-Qstrip_debug");
+		args.emplace_back(L"-Qstrip_reflect");
+
+		args.emplace_back(DXC_ARG_WARNINGS_ARE_ERRORS);
+		args.emplace_back(DXC_ARG_DEBUG);
+	}
+
+	DxcBuffer buffer = {
+		.Ptr      = encoding->GetBufferPointer(),
+		.Size     = encoding->GetBufferSize(),
+		.Encoding = DXC_CP_ACP
+	};
+
+	ComPtr<IDxcResult> result;
+	hr = compiler->Compile(&buffer, args.data(), args.size(), handler.Get(), IID_PPV_ARGS(result.GetAddressOf()));
+	RETURN_FALSE_IF_FAILED(hr);
+
+	ComPtr<IDxcBlobUtf8> error;
+	hr = result->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(error.GetAddressOf()), nullptr);
+	RETURN_FALSE_IF_FAILED(hr);
+
+	if (error && error->GetStringLength() > 0)
+	{
+		Debug::Log("%s\n", error->GetStringPointer());
+		return false;
+	}
+
+	hr = result->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(blob), nullptr);
+	RETURN_FALSE_IF_FAILED(hr);
+
+	return true;
 }

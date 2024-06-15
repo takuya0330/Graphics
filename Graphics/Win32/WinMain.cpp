@@ -1,11 +1,14 @@
 ﻿// https://learn.microsoft.com/ja-jp/windows/win32/learnwin32/winmain--the-application-entry-point
 
-#define APP_WIN32 1
-#define APP_D3D11 1
-#define APP_D3D12 1
-#define APP_IMGUI 1
+#define APP_WIN32    1
+#define APP_D3D11    1
+#define APP_D3D12    1
+#define APP_IMGUI    1
+#define APP_TRIANGLE 1
 
 #if 0
+#elif APP_WIN32 && APP_D3D12 && APP_TRIANGLE
+#include "D3D12/D3D12TriangleApp.h"
 #elif APP_WIN32 && APP_D3D12 && APP_IMGUI
 #include "D3D12/D3D12ImGuiApp.h"
 #elif APP_WIN32 && APP_D3D12
@@ -37,6 +40,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	{
 		std::unique_ptr<CoreApp> app;
 #if 0
+#elif APP_WIN32 && APP_D3D12 && APP_TRIANGLE
+		app = std::make_unique<D3D12TriangleApp>(L"D3D12 Triangle", kWidth, kHeight);
 #elif APP_WIN32 && APP_D3D12 && APP_IMGUI
 		app = std::make_unique<D3D12ImGuiApp>(L"D3D12 ImGui", kWidth, kHeight);
 #elif APP_WIN32 && APP_D3D12

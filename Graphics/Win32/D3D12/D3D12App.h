@@ -2,6 +2,7 @@
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "dxcompiler.lib")
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
@@ -9,6 +10,7 @@
 
 #include <array>
 
+#include "External/DirectXShaderCompiler/inc/dxcapi.h"
 #include "Win32App.h"
 
 class D3D12App : public Win32App
@@ -30,19 +32,55 @@ protected:
 protected:
 	void reset();
 
-    void setViewport(float width, float height);
+	void setViewport(float width, float height);
 
-    void setScissorRect(LONG width, LONG height);
+	void setScissorRect(LONG width, LONG height);
 
-    void setBackBuffer();
+	void setBackBuffer();
 
 	void executeCommandList();
 
-    void present(UINT sync_interval);
+	void present(UINT sync_interval);
 
-    void waitPreviousFrame();
+	void waitPreviousFrame();
 
-    void waitForGPU();
+	void waitForGPU(ID3D12CommandQueue* cmd_queue);
+
+protected:
+	bool createCommandQueue(
+	    const D3D12_COMMAND_LIST_TYPE type,
+	    ID3D12CommandQueue**          cmd_queue);
+
+	bool createCommandAllocator(
+	    const D3D12_COMMAND_LIST_TYPE type,
+	    ID3D12CommandAllocator**      cmd_allocator);
+
+	bool createCommandList(
+	    const D3D12_COMMAND_LIST_TYPE type,
+	    ID3D12CommandAllocator*       cmd_allocator,
+	    ID3D12GraphicsCommandList**   cmd_list);
+
+	bool createBuffer(
+	    const D3D12_HEAP_TYPE       heap_type,
+	    const UINT64                size,
+	    const D3D12_RESOURCE_STATES state,
+	    ID3D12Resource**            resource);
+
+	bool createTexture2D(
+	    const D3D12_HEAP_TYPE       heap_type,
+	    const UINT64                width,
+	    const UINT                  height,
+	    const DXGI_FORMAT           format,
+	    const D3D12_RESOURCE_FLAGS  flags,
+	    const D3D12_RESOURCE_STATES state,
+	    const D3D12_CLEAR_VALUE*    clear_value,
+	    ID3D12Resource**            resource);
+
+	bool loadShader(
+	    const wchar_t* filename,
+	    const wchar_t* entry_point,
+	    const wchar_t* shader_model,
+	    IDxcBlob**     blob);
 
 protected:
 	static constexpr UINT kBackBufferCount = 2;
