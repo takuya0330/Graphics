@@ -2,8 +2,10 @@
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "d3dcompiler.lib")
 
 #include <d3d11.h>
+#include <d3dcompiler.h>
 #include <dxgi.h>
 #include <wrl.h>
 
@@ -30,9 +32,16 @@ protected:
 protected:
 	void setViewport(float width, float height);
 
-    void setBackBuffer();
+	void setBackBuffer();
 
-    void present(UINT sync_interval);
+	void present(UINT sync_interval);
+
+protected:
+	bool loadShader(
+	    const wchar_t* filename,
+	    const char*    entry_point,
+	    const char*    shader_model,
+	    ID3DBlob**     blob);
 
 protected:
 	static constexpr UINT kBackBufferCount = 2;

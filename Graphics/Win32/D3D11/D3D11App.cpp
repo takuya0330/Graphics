@@ -178,3 +178,28 @@ void D3D11App::present(UINT sync_interval)
 {
 	m_dxgi_swap_chain->Present(sync_interval, 0);
 }
+
+bool D3D11App::loadShader(
+    const wchar_t* filename,
+    const char*    entry_point,
+    const char*    shader_model,
+    ID3DBlob**     blob)
+{
+	ComPtr<ID3DBlob> error;
+
+	UINT compile_flags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3;
+#if defined(_DEBUG)
+	compile_flags |= D3DCOMPILE_DEBUG;
+#endif
+
+	auto hr = D3DCompileFromFile(filename, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entry_point, shader_model, compile_flags, 0, blob, error.GetAddressOf());
+	RETURN_FALSE_IF_FAILED(hr);
+
+    if (error)
+    {
+		Debug::Log("%s\n", static_cast<char*>(error->GetBufferPointer()));
+		return false;
+    }
+
+	return true;
+}
