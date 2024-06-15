@@ -148,24 +148,33 @@ void D3D11App::OnUpdate()
 
 void D3D11App::OnRender()
 {
-	{
-		D3D11_VIEWPORT viewport = {
-			.TopLeftX = 0,
-			.TopLeftY = 0,
-			.Width    = static_cast<float>(m_width),
-			.Height   = static_cast<float>(m_height),
-			.MinDepth = 0.0f,
-			.MaxDepth = 1.0f
-		};
-		m_d3d11_immediate_context->RSSetViewports(1, &viewport);
-	}
+	setViewport(static_cast<float>(m_width), static_cast<float>(m_height));
+	setBackBuffer();
+	present(1);
+}
 
-	{
-		constexpr float kClearColor[] = { 0, 0, 0, 1 };
-		m_d3d11_immediate_context->ClearRenderTargetView(m_d3d11_render_target_view.Get(), kClearColor);
-		m_d3d11_immediate_context->ClearDepthStencilView(m_d3d11_depth_stencil_view.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		m_d3d11_immediate_context->OMSetRenderTargets(1, m_d3d11_render_target_view.GetAddressOf(), m_d3d11_depth_stencil_view.Get());
-	}
+void D3D11App::setViewport(float width, float height)
+{
+	D3D11_VIEWPORT viewport = {
+		.TopLeftX = 0,
+		.TopLeftY = 0,
+		.Width    = width,
+		.Height   = height,
+		.MinDepth = 0.0f,
+		.MaxDepth = 1.0f
+	};
+	m_d3d11_immediate_context->RSSetViewports(1, &viewport);
+}
 
-	m_dxgi_swap_chain->Present(1, 0);
+void D3D11App::setBackBuffer()
+{
+	constexpr float kClearColor[] = { 0, 0, 0, 1 };
+	m_d3d11_immediate_context->ClearRenderTargetView(m_d3d11_render_target_view.Get(), kClearColor);
+	m_d3d11_immediate_context->ClearDepthStencilView(m_d3d11_depth_stencil_view.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	m_d3d11_immediate_context->OMSetRenderTargets(1, m_d3d11_render_target_view.GetAddressOf(), m_d3d11_depth_stencil_view.Get());
+}
+
+void D3D11App::present(UINT sync_interval)
+{
+	m_dxgi_swap_chain->Present(sync_interval, 0);
 }

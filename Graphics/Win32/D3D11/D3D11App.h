@@ -28,6 +28,13 @@ protected:
 	virtual void OnRender() override;
 
 protected:
+	void setViewport(float width, float height);
+
+    void setBackBuffer();
+
+    void present(UINT sync_interval);
+
+protected:
 	static constexpr UINT kBackBufferCount = 2;
 
 	template<class T>
