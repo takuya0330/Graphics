@@ -76,6 +76,9 @@
     <ClCompile Include="D3D12\D3D12TriangleApp.cpp">
       <Filter>Source\D3D12</Filter>
     </ClCompile>
+    <ClCompile Include="D3D11\D3D11TriangleApp.cpp">
+      <Filter>Source\D3D11</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win32App.h">
@@ -131,6 +134,9 @@
     </ClInclude>
     <ClInclude Include="External\DirectXShaderCompiler\inc\dxcapi.h">
       <Filter>External\DirectXCompiler\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D11\D3D11TriangleApp.h">
+      <Filter>Source\D3D11</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
