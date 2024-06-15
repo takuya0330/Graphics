@@ -24,9 +24,9 @@ bool D3D11ImGuiApp::OnInitialize()
 	ImGui::CreateContext();
 
 	ASSERT_RETURN(ImGui_ImplWin32_Init(m_hwnd), false);
-    ASSERT_RETURN(ImGui_ImplDX11_Init(m_d3d11_device.Get(), m_d3d11_immediate_context.Get()), false);
+	ASSERT_RETURN(ImGui_ImplDX11_Init(m_d3d11_device.Get(), m_d3d11_immediate_context.Get()), false);
 
-    return true;
+	return true;
 }
 
 void D3D11ImGuiApp::OnFinalize()
@@ -56,6 +56,12 @@ void D3D11ImGuiApp::OnRender()
 {
 	setViewport(static_cast<float>(m_width), static_cast<float>(m_height));
 	setBackBuffer();
+
+	{
+		ImGui::Render();
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
+
 	present(1);
 }
 
