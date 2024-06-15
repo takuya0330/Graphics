@@ -167,7 +167,7 @@ void D3D12TriangleApp::OnRender()
 			view.StrideInBytes  = sizeof(Vertex);
         }
 		m_gfx_cmd_list->IASetVertexBuffers(0, 1, &view);
-        m_gfx_cmd_list->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        m_gfx_cmd_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         m_gfx_cmd_list->DrawInstanced(3, 1, 0, 0);
 	}
 
