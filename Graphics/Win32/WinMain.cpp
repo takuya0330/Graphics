@@ -1,11 +1,4 @@
-﻿// https://learn.microsoft.com/ja-jp/windows/win32/learnwin32/winmain--the-application-entry-point
-
-#define APP_WIN32    1
-#define APP_D3D11    1
-#define APP_D3D12    1
-#define APP_IMGUI    1
-#define APP_TRIANGLE 1
-#define APP_TEXTURE  1
+﻿#include "CoreApp.h"
 
 #if 0
 #elif APP_WIN32 && APP_D3D12 && APP_TEXTURE
@@ -26,8 +19,6 @@
 #include "D3D11/D3D11App.h"
 #elif APP_WIN32
 #include "Win32App.h"
-#else
-#include "CoreApp.h"
 #endif
 
 #include <crtdbg.h>

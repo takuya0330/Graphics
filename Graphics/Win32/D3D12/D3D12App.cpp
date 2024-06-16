@@ -1,5 +1,7 @@
 ﻿#include "D3D12App.h"
 
+#if APP_WIN32 && APP_D3D12
+
 #include <filesystem>
 #include <fstream>
 #include <vector>
@@ -533,3 +535,5 @@ bool D3D12App::loadShader(
 
 	return true;
 }
+
+#endif

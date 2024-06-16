@@ -1,5 +1,7 @@
 ﻿#include "D3D11ImGuiApp.h"
 
+#if APP_WIN32 && APP_D3D11 && APP_IMGUI
+
 // clang-format off
 #include "External/ImGui/imgui.h"
 #include "External/ImGui/backends/imgui_impl_win32.h"
@@ -72,3 +74,5 @@ LRESULT CALLBACK D3D11ImGuiApp::OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam
 
 	return Win32App::OnWindowProc(hWnd, uMsg, wParam, lParam);
 }
+
+#endif

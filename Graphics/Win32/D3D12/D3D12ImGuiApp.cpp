@@ -1,5 +1,7 @@
 ﻿#include "D3D12ImGuiApp.h"
 
+#if APP_WIN32 && APP_D3D12 && APP_IMGUI
+
 // clang-format off
 #include "External/ImGui/imgui.h"
 #include "External/ImGui/backends/imgui_impl_win32.h"
@@ -92,3 +94,5 @@ void D3D12ImGuiApp::renderImGui()
 	m_gfx_cmd_list->SetDescriptorHeaps(1, m_imgui_heap.GetAddressOf());
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_gfx_cmd_list.Get());
 }
+
+#endif

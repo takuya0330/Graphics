@@ -13,6 +13,8 @@
 #include "External/DirectXShaderCompiler/inc/dxcapi.h"
 #include "Win32App.h"
 
+#if APP_WIN32 && APP_D3D12
+
 class D3D12App : public Win32App
 {
 public:
@@ -60,7 +62,7 @@ protected:
 	    ID3D12CommandAllocator*       cmd_allocator,
 	    ID3D12GraphicsCommandList**   cmd_list);
 
-    bool createDescriptorHeap(
+	bool createDescriptorHeap(
 	    const D3D12_DESCRIPTOR_HEAP_TYPE  heap_type,
 	    const UINT                        size,
 	    const D3D12_DESCRIPTOR_HEAP_FLAGS flags,
@@ -115,3 +117,5 @@ protected:
 	ComPtr2<ID3D12Fence>              m_fences;
 	Array2<UINT64>                    m_fence_values;
 };
+
+#endif

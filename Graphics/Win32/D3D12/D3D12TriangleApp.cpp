@@ -1,5 +1,7 @@
 ﻿#include "D3D12TriangleApp.h"
 
+#if APP_WIN32 && APP_D3D12 && APP_TRIANGLE
+
 namespace {
 
 struct Vertex
@@ -175,3 +177,5 @@ void D3D12TriangleApp::OnRender()
 	present(1);
 	waitPreviousFrame();
 }
+
+#endif

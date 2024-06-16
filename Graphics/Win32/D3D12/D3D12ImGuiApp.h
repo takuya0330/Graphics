@@ -2,6 +2,8 @@
 
 #include "D3D12App.h"
 
+#if APP_WIN32 && APP_D3D12 && APP_IMGUI
+
 class D3D12ImGuiApp : public D3D12App
 {
 public:
@@ -29,3 +31,5 @@ private:
 	bool m_enable_demo_window;
 #endif
 };
+
+#endif

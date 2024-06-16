@@ -1,5 +1,7 @@
 ﻿#include "D3D12TextureApp.h"
 
+#if APP_WIN32 && APP_D3D12 && APP_TEXTURE
+
 #include "Image.h"
 
 namespace {
@@ -321,3 +323,5 @@ void D3D12TextureApp::OnRender()
 	present(1);
 	waitPreviousFrame();
 }
+
+#endif

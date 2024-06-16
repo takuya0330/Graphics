@@ -1,5 +1,7 @@
 ﻿#include "D3D11TriangleApp.h"
 
+#if APP_WIN32 && APP_D3D11 && APP_TRIANGLE
+
 namespace {
 
 struct Vertex
@@ -98,3 +100,5 @@ void D3D11TriangleApp::OnRender()
 
 	present(1);
 }
+
+#endif

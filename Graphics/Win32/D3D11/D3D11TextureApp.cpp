@@ -1,5 +1,7 @@
 ﻿#include "D3D11TextureApp.h"
 
+#if APP_WIN32 && APP_D3D11 && APP_TEXTURE
+
 #include "Image.h"
 
 namespace {
@@ -186,3 +188,5 @@ void D3D11TextureApp::OnRender()
 
 	present(1);
 }
+
+#endif

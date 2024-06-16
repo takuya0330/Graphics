@@ -2,6 +2,8 @@
 
 #include "D3D12App.h"
 
+#if APP_WIN32 && APP_D3D12 && APP_TEXTURE
+
 class D3D12TextureApp : public D3D12App
 {
 public:
@@ -27,3 +29,5 @@ private:
 	ComPtr<ID3D12RootSignature>  m_root_signature;
 	ComPtr<ID3D12PipelineState>  m_pipeline_state;
 };
+
+#endif

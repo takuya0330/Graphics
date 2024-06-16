@@ -1,5 +1,7 @@
 ﻿#include "D3D11App.h"
 
+#if APP_WIN32 && APP_D3D11
+
 #include <vector>
 
 D3D11App::D3D11App(LPCWSTR title, UINT width, UINT height)
@@ -195,11 +197,13 @@ bool D3D11App::loadShader(
 	auto hr = D3DCompileFromFile(filename, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entry_point, shader_model, compile_flags, 0, blob, error.GetAddressOf());
 	RETURN_FALSE_IF_FAILED(hr);
 
-    if (error)
-    {
+	if (error)
+	{
 		Debug::Log("%s\n", static_cast<char*>(error->GetBufferPointer()));
 		return false;
-    }
+	}
 
 	return true;
 }
+
+#endif

@@ -13,6 +13,8 @@
 
 #include "Win32App.h"
 
+#if APP_WIN32 && APP_D3D11
+
 class D3D11App : public Win32App
 {
 public:
@@ -62,3 +64,5 @@ protected:
 	ComPtr<ID3D11RenderTargetView> m_d3d11_render_target_view;
 	ComPtr<ID3D11DepthStencilView> m_d3d11_depth_stencil_view;
 };
+
+#endif

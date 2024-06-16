@@ -8,6 +8,8 @@
 #include "CoreApp.h"
 #include "Debug.h"
 
+#if APP_WIN32
+
 class Win32App : public CoreApp
 {
 public:
@@ -26,7 +28,7 @@ protected:
 
 	virtual void OnRender();
 
-    virtual LRESULT CALLBACK OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT CALLBACK OnWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
 	HWND    m_hwnd;
@@ -38,3 +40,5 @@ protected:
 private:
 	friend LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
+
+#endif
