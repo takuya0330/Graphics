@@ -83,8 +83,6 @@ bool D3D12TextureApp::OnInitialize()
 
 	ComPtr<ID3D12Resource> upload_texture;
 	{
-		//int  width = 0, height = 0, bpp = 0;
-		//auto image = stbi_load("../../Asset/uv.png", &width, &height, &bpp, 4);
 		Image image("../../Asset/uv.png");
 
 		if (!createTexture2D(D3D12_HEAP_TYPE_DEFAULT, image.GetWidth(), image.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_COMMON, nullptr, m_texture.GetAddressOf()))
@@ -108,7 +106,6 @@ bool D3D12TextureApp::OnInitialize()
 				std::memcpy(dst, src, footprint.Footprint.RowPitch);
 			}
 			upload_texture->Unmap(0, nullptr);
-			//stbi_image_free(image);
 		}
 
 		D3D12_TEXTURE_COPY_LOCATION copy_dst = {};
