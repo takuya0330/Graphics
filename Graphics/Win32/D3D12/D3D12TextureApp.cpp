@@ -14,6 +14,13 @@ struct Vertex
 
 D3D12TextureApp::D3D12TextureApp(LPCWSTR title, UINT width, UINT height)
     : D3D12App(title, width, height)
+    , m_vertex_buffer()
+    , m_index_buffer()
+    , m_texture()
+    , m_texture_heap()
+    , m_sampler_heap()
+    , m_root_signature()
+    , m_pipeline_state()
 {
 }
 

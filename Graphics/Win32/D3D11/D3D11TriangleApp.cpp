@@ -13,6 +13,9 @@ struct Vertex
 D3D11TriangleApp::D3D11TriangleApp(LPCWSTR title, UINT width, UINT height)
     : D3D11App(title, width, height)
     , m_vertex_buffer()
+    , m_vertex_shader()
+    , m_input_layout()
+    , m_pixel_shader()
 {
 }
 
