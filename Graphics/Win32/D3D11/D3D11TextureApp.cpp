@@ -14,6 +14,13 @@ struct Vertex
 
 D3D11TextureApp::D3D11TextureApp(LPCWSTR title, UINT width, UINT height)
     : D3D11App(title, width, height)
+    , m_vertex_buffer()
+    , m_index_buffer()
+    , m_texture_view()
+    , m_sampler()
+    , m_vertex_shader()
+    , m_input_layout()
+    , m_pixel_shader()
 {
 }
 
