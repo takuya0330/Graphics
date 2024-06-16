@@ -47,7 +47,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 #if 0
 #elif APP_WIN32 && APP_D3D12 && APP_TEXTURE
 		app = std::make_unique<D3D12TextureApp>(L"D3D12 Texture", kWidth, kHeight);
-#elif APP_WIN32&& APP_D3D12&& APP_TRIANGLE
+#elif APP_WIN32 && APP_D3D12 && APP_TRIANGLE
 		app = std::make_unique<D3D12TriangleApp>(L"D3D12 Triangle", kWidth, kHeight);
 #elif APP_WIN32 && APP_D3D12 && APP_IMGUI
 		app = std::make_unique<D3D12ImGuiApp>(L"D3D12 ImGui", kWidth, kHeight);
