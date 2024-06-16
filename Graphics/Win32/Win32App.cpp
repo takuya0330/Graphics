@@ -13,6 +13,7 @@ Win32App::Win32App(LPCWSTR title, UINT width, UINT height)
     , m_title(title)
     , m_width(width)
     , m_height(height)
+    , m_aspect_ratio(static_cast<float>(width) / height)
 {
 }
 

@@ -39,10 +39,10 @@ bool D3D12TextureApp::OnInitialize()
 	ComPtr<ID3D12Resource> upload_vbuffer;
 	{
 		const Vertex vertices[] = {
-			{{ -0.5, +0.5, 0 },  { 0, 0 }},
-			{ { +0.5, +0.5, 0 }, { 1, 0 }},
-			{ { -0.5, -0.5, 0 }, { 0, 1 }},
-			{ { +0.5, -0.5, 0 }, { 1, 1 }},
+			{ { -0.5, +0.5 * m_aspect_ratio, 0 },  { 0, 0 }},
+			{ { +0.5, +0.5 * m_aspect_ratio, 0 }, { 1, 0 }},
+			{ { -0.5, -0.5 * m_aspect_ratio, 0 }, { 0, 1 }},
+			{ { +0.5, -0.5 * m_aspect_ratio, 0 }, { 1, 1 }},
 		};
 
 		if (!createBuffer(D3D12_HEAP_TYPE_DEFAULT, sizeof(vertices), D3D12_RESOURCE_STATE_COMMON, m_vertex_buffer.GetAddressOf()))

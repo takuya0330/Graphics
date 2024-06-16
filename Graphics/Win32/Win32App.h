@@ -33,6 +33,7 @@ protected:
 	LPCWSTR m_title;
 	UINT    m_width;
 	UINT    m_height;
+	float   m_aspect_ratio;
 
 private:
 	friend LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
