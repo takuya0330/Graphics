@@ -1,7 +1,6 @@
 ﻿#include "D3D12TextureApp.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "External/stb/stb_image.h"
+#include "Image.h"
 
 namespace {
 
@@ -84,10 +83,11 @@ bool D3D12TextureApp::OnInitialize()
 
 	ComPtr<ID3D12Resource> upload_texture;
 	{
-		int  width = 0, height = 0, bpp = 0;
-		auto image = stbi_load("../../Asset/uv.png", &width, &height, &bpp, 4);
+		//int  width = 0, height = 0, bpp = 0;
+		//auto image = stbi_load("../../Asset/uv.png", &width, &height, &bpp, 4);
+		Image image("../../Asset/uv.png");
 
-		if (!createTexture2D(D3D12_HEAP_TYPE_DEFAULT, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_COMMON, nullptr, m_texture.GetAddressOf()))
+		if (!createTexture2D(D3D12_HEAP_TYPE_DEFAULT, image.GetWidth(), image.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_COMMON, nullptr, m_texture.GetAddressOf()))
 			return false;
 
 		UINT64                             upload_size  = 0;
@@ -101,14 +101,14 @@ bool D3D12TextureApp::OnInitialize()
 		{
 			void* data = nullptr;
 			ASSERT_IF_FAILED(upload_texture->Map(0, nullptr, &data));
-			for (UINT y = 0; y < height; ++y)
+			for (UINT y = 0; y < image.GetHeight(); ++y)
 			{
 				auto dst = reinterpret_cast<uint8_t*>(data) + footprint.Footprint.RowPitch * y;
-				auto src = image + (width * 4) * y;
+				auto src = image.GetBuffer() + image.GetStride() * y;
 				std::memcpy(dst, src, footprint.Footprint.RowPitch);
 			}
 			upload_texture->Unmap(0, nullptr);
-			stbi_image_free(image);
+			//stbi_image_free(image);
 		}
 
 		D3D12_TEXTURE_COPY_LOCATION copy_dst = {};

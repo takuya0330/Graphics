@@ -156,6 +156,7 @@
     <ClCompile Include="External\ImGui\imgui_draw.cpp" />
     <ClCompile Include="External\ImGui\imgui_tables.cpp" />
     <ClCompile Include="External\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="Image.cpp" />
     <ClCompile Include="Win32App.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
@@ -179,6 +180,7 @@
     <ClInclude Include="External\ImGui\imstb_rectpack.h" />
     <ClInclude Include="External\ImGui\imstb_textedit.h" />
     <ClInclude Include="External\ImGui\imstb_truetype.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="Win32App.h" />
   </ItemGroup>
   <ItemGroup>
