@@ -85,6 +85,9 @@
     <ClCompile Include="Image.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="D3D11\D3D11TextureApp.cpp">
+      <Filter>Source\D3D11</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win32App.h">
@@ -149,6 +152,9 @@
     </ClInclude>
     <ClInclude Include="Image.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D11\D3D11TextureApp.h">
+      <Filter>Source\D3D11</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

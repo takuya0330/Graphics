@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClCompile Include="D3D11\D3D11App.cpp" />
     <ClCompile Include="D3D11\D3D11ImGuiApp.cpp" />
+    <ClCompile Include="D3D11\D3D11TextureApp.cpp" />
     <ClCompile Include="D3D11\D3D11TriangleApp.cpp" />
     <ClCompile Include="D3D12\D3D12App.cpp" />
     <ClCompile Include="D3D12\D3D12ImGuiApp.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="CoreApp.h" />
     <ClInclude Include="D3D11\D3D11App.h" />
     <ClInclude Include="D3D11\D3D11ImGuiApp.h" />
+    <ClInclude Include="D3D11\D3D11TextureApp.h" />
     <ClInclude Include="D3D11\D3D11TriangleApp.h" />
     <ClInclude Include="D3D12\D3D12App.h" />
     <ClInclude Include="D3D12\D3D12ImGuiApp.h" />

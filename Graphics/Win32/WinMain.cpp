@@ -16,6 +16,8 @@
 #include "D3D12/D3D12ImGuiApp.h"
 #elif APP_WIN32 && APP_D3D12
 #include "D3D12/D3D12App.h"
+#elif APP_WIN32 && APP_D3D11 && APP_TEXTURE
+#include "D3D11/D3D11TextureApp.h"
 #elif APP_WIN32 && APP_D3D11 && APP_TRIANGLE
 #include "D3D11/D3D11TriangleApp.h"
 #elif APP_WIN32 && APP_D3D11 && APP_IMGUI
@@ -53,6 +55,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		app = std::make_unique<D3D12ImGuiApp>(L"D3D12 ImGui", kWidth, kHeight);
 #elif APP_WIN32 && APP_D3D12
 		app = std::make_unique<D3D12App>(L"D3D12 App", kWidth, kHeight);
+#elif APP_WIN32 && APP_D3D11 && APP_TEXTURE
+		app = std::make_unique<D3D11TextureApp>(L"D3D11 Texture", kWidth, kHeight);
 #elif APP_WIN32 && APP_D3D11 && APP_TRIANGLE
 		app = std::make_unique<D3D11TriangleApp>(L"D3D11 Triangle", kWidth, kHeight);
 #elif APP_WIN32 && APP_D3D11 && APP_IMGUI
@@ -66,6 +70,5 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 #endif
 		ret = app->Run();
 	}
-
 	return ret;
 }
