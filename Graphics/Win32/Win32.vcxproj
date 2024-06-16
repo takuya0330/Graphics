@@ -172,7 +172,6 @@
     <ClInclude Include="D3D12\D3D12TextureApp.h" />
     <ClInclude Include="D3D12\D3D12TriangleApp.h" />
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="External\DirectXShaderCompiler\inc\dxcapi.h" />
     <ClInclude Include="External\ImGui\backends\imgui_impl_dx11.h" />
     <ClInclude Include="External\ImGui\backends\imgui_impl_dx12.h" />
     <ClInclude Include="External\ImGui\backends\imgui_impl_win32.h" />

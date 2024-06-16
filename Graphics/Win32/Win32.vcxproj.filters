@@ -20,12 +20,6 @@
     <Filter Include="External\ImGui\backends">
       <UniqueIdentifier>{8b3841c2-0c08-47b2-bebd-fdfa1490302e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External\DirectXCompiler">
-      <UniqueIdentifier>{9ffd9653-f2f7-4dd8-bd4c-dd729e6077f3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External\DirectXCompiler\inc">
-      <UniqueIdentifier>{6af3d41b-f30c-4f0d-b1d1-c81ff269b397}</UniqueIdentifier>
-    </Filter>
     <Filter Include="HLSL">
       <UniqueIdentifier>{654f9f03-54cf-4653-8e7f-6cced31f3d95}</UniqueIdentifier>
     </Filter>
@@ -140,9 +134,6 @@
     </ClInclude>
     <ClInclude Include="D3D12\D3D12TriangleApp.h">
       <Filter>Source\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="External\DirectXShaderCompiler\inc\dxcapi.h">
-      <Filter>External\DirectXCompiler\inc</Filter>
     </ClInclude>
     <ClInclude Include="D3D11\D3D11TriangleApp.h">
       <Filter>Source\D3D11</Filter>
