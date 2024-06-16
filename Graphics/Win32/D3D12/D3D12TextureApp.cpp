@@ -39,7 +39,7 @@ bool D3D12TextureApp::OnInitialize()
 	ComPtr<ID3D12Resource> upload_vbuffer;
 	{
 		const Vertex vertices[] = {
-			{ { -0.5, +0.5 * m_aspect_ratio, 0 },  { 0, 0 }},
+			{{ -0.5, +0.5 * m_aspect_ratio, 0 },  { 0, 0 }},
 			{ { +0.5, +0.5 * m_aspect_ratio, 0 }, { 1, 0 }},
 			{ { -0.5, -0.5 * m_aspect_ratio, 0 }, { 0, 1 }},
 			{ { +0.5, -0.5 * m_aspect_ratio, 0 }, { 1, 1 }},
