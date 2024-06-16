@@ -79,6 +79,9 @@
     <ClCompile Include="D3D11\D3D11TriangleApp.cpp">
       <Filter>Source\D3D11</Filter>
     </ClCompile>
+    <ClCompile Include="D3D12\D3D12TextureApp.cpp">
+      <Filter>Source\D3D12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Win32App.h">
@@ -138,12 +141,21 @@
     <ClInclude Include="D3D11\D3D11TriangleApp.h">
       <Filter>Source\D3D11</Filter>
     </ClInclude>
+    <ClInclude Include="D3D12\D3D12TextureApp.h">
+      <Filter>Source\D3D12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="HLSL\PositionColor_vs.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\PositionColor_ps.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\PositionTexcoord_vs.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\PositionTexcoord_ps.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
   </ItemGroup>

@@ -146,6 +146,7 @@
     <ClCompile Include="D3D11\D3D11TriangleApp.cpp" />
     <ClCompile Include="D3D12\D3D12App.cpp" />
     <ClCompile Include="D3D12\D3D12ImGuiApp.cpp" />
+    <ClCompile Include="D3D12\D3D12TextureApp.cpp" />
     <ClCompile Include="D3D12\D3D12TriangleApp.cpp" />
     <ClCompile Include="External\ImGui\backends\imgui_impl_dx11.cpp" />
     <ClCompile Include="External\ImGui\backends\imgui_impl_dx12.cpp" />
@@ -165,6 +166,7 @@
     <ClInclude Include="D3D11\D3D11TriangleApp.h" />
     <ClInclude Include="D3D12\D3D12App.h" />
     <ClInclude Include="D3D12\D3D12ImGuiApp.h" />
+    <ClInclude Include="D3D12\D3D12TextureApp.h" />
     <ClInclude Include="D3D12\D3D12TriangleApp.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="External\DirectXShaderCompiler\inc\dxcapi.h" />
@@ -185,6 +187,18 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="HLSL\PositionColor_vs.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="HLSL\PositionTexcoord_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="HLSL\PositionTexcoord_vs.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
