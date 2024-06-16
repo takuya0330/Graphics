@@ -133,14 +133,9 @@ bool D3D12App::OnInitialize()
 	}
 
 	{
-		D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_desc = {
-			.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
-			.NumDescriptors = kBackBufferCount,
-			.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_NONE,
-			.NodeMask       = 0
-		};
-		hr = m_device->CreateDescriptorHeap(&rtv_heap_desc, IID_PPV_ARGS(m_rtv_heap.GetAddressOf()));
-		RETURN_FALSE_IF_FAILED(hr);
+		if (!createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, kBackBufferCount, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, m_rtv_heap.GetAddressOf()))
+			return true;
+
 		m_rtv_heap_size = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 		auto handle = m_rtv_heap->GetCPUDescriptorHandleForHeapStart();
@@ -156,14 +151,8 @@ bool D3D12App::OnInitialize()
 	}
 
 	{
-		D3D12_DESCRIPTOR_HEAP_DESC dsv_heap_desc = {
-			.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
-			.NumDescriptors = 1,
-			.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_NONE,
-			.NodeMask       = 0
-		};
-		hr = m_device->CreateDescriptorHeap(&dsv_heap_desc, IID_PPV_ARGS(m_dsv_heap.GetAddressOf()));
-		RETURN_FALSE_IF_FAILED(hr);
+		if (!createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, m_dsv_heap.GetAddressOf()))
+			return true;
 
 		D3D12_CLEAR_VALUE d3d12_clear_value = {
 			.Format       = DXGI_FORMAT_D32_FLOAT,
@@ -373,6 +362,24 @@ bool D3D12App::createCommandList(
 	RETURN_FALSE_IF_FAILED(hr);
 
 	hr = (*cmd_list)->Close();
+	RETURN_FALSE_IF_FAILED(hr);
+
+	return true;
+}
+
+bool D3D12App::createDescriptorHeap(
+    const D3D12_DESCRIPTOR_HEAP_TYPE  heap_type,
+    const UINT                        size,
+    const D3D12_DESCRIPTOR_HEAP_FLAGS flags,
+    ID3D12DescriptorHeap**            descriptor_heap)
+{
+	D3D12_DESCRIPTOR_HEAP_DESC dsv_heap_desc = {
+		.Type           = heap_type,
+		.NumDescriptors = size,
+		.Flags          = flags,
+		.NodeMask       = 0
+	};
+	auto hr = m_device->CreateDescriptorHeap(&dsv_heap_desc, IID_PPV_ARGS(descriptor_heap));
 	RETURN_FALSE_IF_FAILED(hr);
 
 	return true;

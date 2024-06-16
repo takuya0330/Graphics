@@ -60,6 +60,12 @@ protected:
 	    ID3D12CommandAllocator*       cmd_allocator,
 	    ID3D12GraphicsCommandList**   cmd_list);
 
+    bool createDescriptorHeap(
+	    const D3D12_DESCRIPTOR_HEAP_TYPE  heap_type,
+	    const UINT                        size,
+	    const D3D12_DESCRIPTOR_HEAP_FLAGS flags,
+	    ID3D12DescriptorHeap**            descriptor_heap);
+
 	bool createBuffer(
 	    const D3D12_HEAP_TYPE       heap_type,
 	    const UINT64                size,
