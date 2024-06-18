@@ -49,6 +49,8 @@ inline void Log(const wchar_t* format, ...)
 
 } // namespace Debug
 
+#define ASSERT(expr) assert(expr)
+
 #define ASSERT_RETURN(expr, ...) \
 	do                           \
 	{                            \

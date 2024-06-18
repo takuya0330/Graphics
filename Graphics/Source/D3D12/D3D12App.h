@@ -1,17 +1,8 @@
 ﻿#pragma once
 
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "dxcompiler.lib")
-
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <wrl.h>
-
 #include <array>
 
-#include "External/DirectXShaderCompiler/inc/dxcapi.h"
-#include "Win32App.h"
+#include "Win32/Win32App.h"
 
 #if APP_WIN32 && APP_D3D12
 
