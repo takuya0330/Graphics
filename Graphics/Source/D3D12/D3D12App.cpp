@@ -304,8 +304,11 @@ void D3D12App::waitPreviousFrame()
 	{
 		auto event = ::CreateEvent(nullptr, false, false, nullptr);
 		m_fences.at(m_back_buffer_index)->SetEventOnCompletion(m_fence_values.at(m_back_buffer_index), event);
+#pragma warning(push)
+#pragma warning(disable : 6387)
 		::WaitForSingleObject(event, INFINITE);
 		::CloseHandle(event);
+#pragma warning(pop)
 	}
 }
 
@@ -322,8 +325,11 @@ void D3D12App::waitForGPU(ID3D12CommandQueue* cmd_queue)
 	{
 		auto event = ::CreateEvent(nullptr, false, false, nullptr);
 		fence->SetEventOnCompletion(expect_value, event);
+#pragma warning(push)
+#pragma warning(disable : 6387)
 		::WaitForSingleObject(event, INFINITE);
 		::CloseHandle(event);
+#pragma warning(pop)
 	}
 }
 
