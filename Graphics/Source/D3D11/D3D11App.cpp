@@ -1,7 +1,5 @@
 ﻿#include "D3D11App.h"
 
-#if APP_WIN32 && APP_D3D11
-
 #include <vector>
 
 D3D11App::D3D11App(LPCWSTR title, UINT width, UINT height)
@@ -205,5 +203,3 @@ bool D3D11App::loadShader(
 
 	return true;
 }
-
-#endif

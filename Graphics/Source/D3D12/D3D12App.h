@@ -4,8 +4,6 @@
 
 #include "Win32/Win32App.h"
 
-#if APP_WIN32 && APP_D3D12
-
 class D3D12App : public Win32App
 {
 public:
@@ -108,5 +106,3 @@ protected:
 	ComPtr2<ID3D12Fence>              m_fences;
 	Array2<UINT64>                    m_fence_values;
 };
-
-#endif

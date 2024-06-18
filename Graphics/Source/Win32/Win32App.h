@@ -3,8 +3,6 @@
 #include "CoreApp.h"
 #include "Debug.h"
 
-#if APP_WIN32
-
 class Win32App : public CoreApp
 {
 public:
@@ -35,5 +33,3 @@ protected:
 private:
 	friend LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
-
-#endif

@@ -1,7 +1,5 @@
 ﻿#include "Win32App.h"
 
-#if APP_WIN32
-
 namespace {
 
 constexpr const wchar_t kWindowClassName[] = L"Win32 API";
@@ -119,5 +117,3 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	auto app = reinterpret_cast<Win32App*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 	return app ? app->OnWindowProc(hWnd, uMsg, wParam, lParam) : ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
-
-#endif
