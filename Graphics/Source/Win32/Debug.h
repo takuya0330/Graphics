@@ -7,7 +7,7 @@
 
 namespace Debug {
 
-#ifdef _CONSOLE
+#if 0
 inline void Print(const char* msg)
 {
 	printf("%s", msg);
