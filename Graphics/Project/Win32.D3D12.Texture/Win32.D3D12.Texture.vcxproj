@@ -160,16 +160,6 @@ if %ERRORLEVEL%==1 ( exit 0 ) else ( exit /b %ERRORLEVEL% )</Command>
     <ClCompile Include="..\..\Source\Win32\Win32App.cpp" />
     <ClCompile Include="..\..\Source\Win32\WinMain.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\..\Source\HLSL\PositionTexcoord_ps.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\..\Source\HLSL\PositionTexcoord_vs.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

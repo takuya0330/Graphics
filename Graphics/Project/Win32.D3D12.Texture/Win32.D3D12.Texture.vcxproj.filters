@@ -11,9 +11,6 @@
     <Filter Include="Source\Win32">
       <UniqueIdentifier>{1a74ad65-99c7-4ca1-831e-27e6a3b910bc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\HLSL">
-      <UniqueIdentifier>{9fcc6eac-3750-4ee6-8c16-f06fd833544c}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\CoreApp.h">
@@ -54,13 +51,5 @@
     <ClCompile Include="..\..\Source\Win32\WinMain.cpp">
       <Filter>Source\Win32</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\..\Source\HLSL\PositionTexcoord_ps.hlsl">
-      <Filter>Source\HLSL</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\Source\HLSL\PositionTexcoord_vs.hlsl">
-      <Filter>Source\HLSL</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>
