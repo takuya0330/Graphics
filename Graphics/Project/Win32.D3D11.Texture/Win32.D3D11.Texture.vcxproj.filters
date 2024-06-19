@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source\Win32">
+      <UniqueIdentifier>{ea4fa669-404e-4ba8-98a6-3b88bf8442cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\D3D11">
+      <UniqueIdentifier>{72b3fc1d-d39f-41f9-b1fc-ef9a6dddb9a9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\CoreApp.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Platform.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\Debug.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\Image.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\Win32App.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\D3D11\D3D11App.h">
+      <Filter>Source\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\D3D11\D3D11TextureApp.h">
+      <Filter>Source\D3D11</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source\Win32\Image.cpp">
+      <Filter>Source\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Win32\Win32App.cpp">
+      <Filter>Source\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Win32\WinMain.cpp">
+      <Filter>Source\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\D3D11\D3D11App.cpp">
+      <Filter>Source\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\D3D11\D3D11TextureApp.cpp">
+      <Filter>Source\D3D11</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
