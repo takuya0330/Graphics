@@ -139,28 +139,11 @@
   <ItemGroup>
     <ClInclude Include="..\..\Source\CoreApp.h" />
     <ClInclude Include="..\..\Source\Platform.h" />
-    <ClInclude Include="..\..\Source\RHI\D3D11\CommandBufferD3D11.h" />
-    <ClInclude Include="..\..\Source\RHI\D3D11\DeviceD3D11.h" />
-    <ClInclude Include="..\..\Source\RHI\D3D11\ColorTargetD3D11.h" />
-    <ClInclude Include="..\..\Source\RHI\D3D11\SwapChainD3D11.h" />
-    <ClInclude Include="..\..\Source\RHI\Device.h" />
-    <ClInclude Include="..\..\Source\RHI\DeviceObject.h" />
-    <ClInclude Include="..\..\Source\RHI\CommandBuffer.h" />
-    <ClInclude Include="..\..\Source\RHI\ForwardDeclaration.h" />
-    <ClInclude Include="..\..\Source\RHI\ColorTarget.h" />
-    <ClInclude Include="..\..\Source\RHI\RHIApp.h" />
-    <ClInclude Include="..\..\Source\RHI\ScopedPtr.h" />
-    <ClInclude Include="..\..\Source\RHI\SwapChain.h" />
     <ClInclude Include="..\..\Source\Win32\Debug.h" />
     <ClInclude Include="..\..\Source\Win32\Image.h" />
     <ClInclude Include="..\..\Source\Win32\Win32App.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\RHI\D3D11\CommandBufferD3D11.cpp" />
-    <ClCompile Include="..\..\Source\RHI\D3D11\DeviceD3D11.cpp" />
-    <ClCompile Include="..\..\Source\RHI\D3D11\ColorTargetD3D11.cpp" />
-    <ClCompile Include="..\..\Source\RHI\D3D11\SwapChainD3D11.cpp" />
-    <ClCompile Include="..\..\Source\RHI\RHIApp.cpp" />
     <ClCompile Include="..\..\Source\Win32\Image.cpp" />
     <ClCompile Include="..\..\Source\Win32\Win32App.cpp" />
     <ClCompile Include="..\..\Source\Win32\WinMain.cpp" />

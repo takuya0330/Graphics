@@ -5,23 +5,11 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source\RHI">
-      <UniqueIdentifier>{d20218d7-2ea6-4b3d-8ae5-4304ef4aef0a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\RHI\D3D11">
-      <UniqueIdentifier>{feff5498-e0ad-4f3e-bfb0-dab4f468d52f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Win32">
       <UniqueIdentifier>{0ca8fa84-4dbf-4c33-9816-64acb1d5d1a6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\RHI\Device.h">
-      <Filter>Source\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\RHI\D3D11\DeviceD3D11.h">
-      <Filter>Source\RHI\D3D11</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source\Win32\Debug.h">
       <Filter>Source\Win32</Filter>
     </ClInclude>
@@ -37,36 +25,6 @@
     <ClInclude Include="..\..\Source\Platform.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\RHI\DeviceObject.h">
-      <Filter>Source\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\RHI\SwapChain.h">
-      <Filter>Source\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\RHI\D3D11\SwapChainD3D11.h">
-      <Filter>Source\RHI\D3D11</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\RHI\CommandBuffer.h">
-      <Filter>Source\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\RHI\D3D11\CommandBufferD3D11.h">
-      <Filter>Source\RHI\D3D11</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\RHI\RHIApp.h">
-      <Filter>Source\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\RHI\ColorTarget.h">
-      <Filter>Source\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\RHI\D3D11\ColorTargetD3D11.h">
-      <Filter>Source\RHI\D3D11</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\RHI\ForwardDeclaration.h">
-      <Filter>Source\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\RHI\ScopedPtr.h">
-      <Filter>Source\RHI</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\Win32\Image.cpp">
@@ -77,21 +35,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\Win32\WinMain.cpp">
       <Filter>Source\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\RHI\D3D11\DeviceD3D11.cpp">
-      <Filter>Source\RHI\D3D11</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\RHI\D3D11\SwapChainD3D11.cpp">
-      <Filter>Source\RHI\D3D11</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\RHI\D3D11\CommandBufferD3D11.cpp">
-      <Filter>Source\RHI\D3D11</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\RHI\RHIApp.cpp">
-      <Filter>Source\RHI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\RHI\D3D11\ColorTargetD3D11.cpp">
-      <Filter>Source\RHI\D3D11</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
