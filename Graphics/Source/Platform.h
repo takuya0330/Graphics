@@ -1,5 +1,10 @@
 ﻿#pragma once
 
+#include <atomic>
+#include <cstdint>
+#include <memory>
+#include <vector>
+
 #if defined(_WIN32) || defined(_WIN64)
 
 #define WIN32_LEAN_AND_MEAN
@@ -15,7 +20,7 @@
 
 #include <d3d11.h>
 #include <d3dcompiler.h>
-#include <dxgi.h>
+#include <dxgi1_6.h>
 #include <wrl.h>
 
 namespace MSWRL = Microsoft::WRL;

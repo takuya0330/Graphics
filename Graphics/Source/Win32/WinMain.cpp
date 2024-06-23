@@ -1,6 +1,8 @@
 ﻿#include "CoreApp.h"
 
 #if 0
+#elif _WIN32 && _RHI
+#include "RHI/RHIApp.h"
 #elif _WIN32 && _D3D12 && _TEXTURE
 #include "D3D12/D3D12TextureApp.h"
 #elif _WIN32 && _D3D12 && _TRIANGLE
@@ -38,6 +40,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	{
 		std::unique_ptr<CoreApp> app;
 #if 0
+#elif _WIN32 && _RHI
+		app = std::make_unique<RHIApp>(L"RHI App", kWidth, kHeight);
 #elif _WIN32 && _D3D12 && _TEXTURE
 		app = std::make_unique<D3D12TextureApp>(L"D3D12 Texture", kWidth, kHeight);
 #elif _WIN32 && _D3D12 && _TRIANGLE
