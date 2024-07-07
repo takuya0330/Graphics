@@ -90,7 +90,7 @@ bool D3D12TextureApp::OnInitialize()
 
 	ComPtr<ID3D12Resource> upload_texture;
 	{
-		Image image("../../Asset/uv.png");
+		Image image("../../../Asset/uv.png");
 
 		if (!createTexture2D(D3D12_HEAP_TYPE_DEFAULT, image.GetWidth(), image.GetHeight(), DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_COMMON, nullptr, m_texture.GetAddressOf()))
 			return false;
@@ -170,11 +170,11 @@ bool D3D12TextureApp::OnInitialize()
 	}
 
 	ComPtr<IDxcBlob> vs;
-	if (!loadShader(L"../../Source/HLSL/PositionTexcoord_vs.hlsl", L"main", L"vs_6_0", vs.GetAddressOf()))
+	if (!loadShader(L"../../../Source/HLSL/PositionTexcoord_vs.hlsl", L"main", L"vs_6_0", vs.GetAddressOf()))
 		return false;
 
 	ComPtr<IDxcBlob> ps;
-	if (!loadShader(L"../../Source/HLSL/PositionTexcoord_ps.hlsl", L"main", L"ps_6_0", ps.GetAddressOf()))
+	if (!loadShader(L"../../../Source/HLSL/PositionTexcoord_ps.hlsl", L"main", L"ps_6_0", ps.GetAddressOf()))
 		return false;
 
 	HRESULT hr = S_OK;

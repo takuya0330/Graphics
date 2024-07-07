@@ -68,11 +68,11 @@ bool D3D12TriangleApp::OnInitialize()
 	}
 
 	ComPtr<IDxcBlob> vs;
-	if (!loadShader(L"../../Source/HLSL/PositionColor_vs.hlsl", L"main", L"vs_6_0", vs.GetAddressOf()))
+	if (!loadShader(L"../../../Source/HLSL/PositionColor_vs.hlsl", L"main", L"vs_6_0", vs.GetAddressOf()))
 		return false;
 
 	ComPtr<IDxcBlob> ps;
-	if (!loadShader(L"../../Source/HLSL/PositionColor_ps.hlsl", L"main", L"ps_6_0", ps.GetAddressOf()))
+	if (!loadShader(L"../../../Source/HLSL/PositionColor_ps.hlsl", L"main", L"ps_6_0", ps.GetAddressOf()))
 		return false;
 
 	HRESULT hr = S_OK;

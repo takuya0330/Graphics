@@ -11,6 +11,9 @@
     <Filter Include="Source\Win32">
       <UniqueIdentifier>{2fdcd9a1-2587-41c9-ab80-ab8f720ba05b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\HLSL">
+      <UniqueIdentifier>{d62fbfe3-4cae-4aa6-b1e8-14f2aea8cc9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\CoreApp.h">
@@ -51,5 +54,13 @@
     <ClCompile Include="..\..\Source\D3D12\D3D12TriangleApp.cpp">
       <Filter>Source\D3D12</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\Source\HLSL\PositionColor_ps.hlsl">
+      <Filter>Source\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\Source\HLSL\PositionColor_vs.hlsl">
+      <Filter>Source\HLSL</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
