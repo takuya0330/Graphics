@@ -25,6 +25,9 @@
     <ClInclude Include="..\..\Source\Win32\Win32App.h">
       <Filter>Source\Win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\String.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\Win32\Image.cpp">
@@ -34,6 +37,9 @@
       <Filter>Source\Win32</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Win32\WinMain.cpp">
+      <Filter>Source\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Win32\String.cpp">
       <Filter>Source\Win32</Filter>
     </ClCompile>
   </ItemGroup>

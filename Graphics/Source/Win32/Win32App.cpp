@@ -1,5 +1,7 @@
 ﻿#include "Win32App.h"
 
+#include "String.h"
+
 namespace {
 
 constexpr const wchar_t kWindowClassName[] = L"Win32 API";
@@ -14,7 +16,18 @@ Win32App::Win32App(LPCWSTR title, UINT width, UINT height)
     , m_width(width)
     , m_height(height)
     , m_aspect_ratio(static_cast<float>(width) / height)
+    , m_out_dir()
+    , m_asset_dir()
+    , m_hlsl_dir()
 {
+	WCHAR path[512];
+	GetOutDir(path, 512);
+
+	m_out_dir = path;
+	Replace(m_out_dir, L"\\", L"/");
+
+	m_asset_dir = m_out_dir + L"../../../Asset/";
+	m_hlsl_dir  = m_out_dir + L"../../../Source/HLSL/";
 }
 
 int Win32App::Run()

@@ -165,12 +165,14 @@
     <ClInclude Include="..\..\Source\Platform.h" />
     <ClInclude Include="..\..\Source\Win32\Debug.h" />
     <ClInclude Include="..\..\Source\Win32\Image.h" />
+    <ClInclude Include="..\..\Source\Win32\String.h" />
     <ClInclude Include="..\..\Source\Win32\Win32App.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\D3D12\D3D12App.cpp" />
     <ClCompile Include="..\..\Source\D3D12\D3D12TextureApp.cpp" />
     <ClCompile Include="..\..\Source\Win32\Image.cpp" />
+    <ClCompile Include="..\..\Source\Win32\String.cpp" />
     <ClCompile Include="..\..\Source\Win32\Win32App.cpp" />
     <ClCompile Include="..\..\Source\Win32\WinMain.cpp" />
   </ItemGroup>

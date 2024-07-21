@@ -67,6 +67,9 @@
     <ClInclude Include="..\..\Source\External\ImGui\backends\imgui_impl_win32.h">
       <Filter>Source\External\ImGui\backends</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\String.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\Win32\Image.cpp">
@@ -104,6 +107,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\External\ImGui\backends\imgui_impl_win32.cpp">
       <Filter>Source\External\ImGui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Win32\String.cpp">
+      <Filter>Source\Win32</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

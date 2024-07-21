@@ -31,6 +31,9 @@
     <ClInclude Include="..\..\Source\D3D12\D3D12App.h">
       <Filter>Source\D3D12</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\String.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\Win32\Image.cpp">
@@ -44,6 +47,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\D3D12\D3D12App.cpp">
       <Filter>Source\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Win32\String.cpp">
+      <Filter>Source\Win32</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

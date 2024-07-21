@@ -48,11 +48,11 @@ bool D3D11TriangleApp::OnInitialize()
 	RETURN_FALSE_IF_FAILED(hr);
 
 	ComPtr<ID3DBlob> vs;
-	if (!loadShader(L"../../Source/HLSL/PositionColor_vs.hlsl", "main", "vs_5_0", vs.GetAddressOf()))
+	if (!loadShader(L"PositionColor_vs.hlsl", "main", "vs_5_0", vs.GetAddressOf()))
 		return false;
 
 	ComPtr<ID3DBlob> ps;
-	if (!loadShader(L"../../Source/HLSL/PositionColor_ps.hlsl", "main", "ps_5_0", ps.GetAddressOf()))
+	if (!loadShader(L"PositionColor_ps.hlsl", "main", "ps_5_0", ps.GetAddressOf()))
 		return false;
 
 	hr = m_d3d11_device->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, m_vertex_shader.GetAddressOf());

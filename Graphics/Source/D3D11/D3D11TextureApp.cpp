@@ -1,6 +1,7 @@
 ﻿#include "D3D11TextureApp.h"
 
 #include "Win32/Image.h"
+#include "Win32/String.h"
 
 namespace {
 
@@ -80,7 +81,7 @@ bool D3D11TextureApp::OnInitialize()
 	}
 
 	{
-		Image image("../../Asset/uv.png");
+		Image image(UTF16To8(m_asset_dir + L"uv.png").c_str());
 
 		ComPtr<ID3D11Texture2D> texture;
 
@@ -132,11 +133,11 @@ bool D3D11TextureApp::OnInitialize()
 	}
 
 	ComPtr<ID3DBlob> vs;
-	if (!loadShader(L"../../Source/HLSL/PositionTexcoord_vs.hlsl", "main", "vs_5_0", vs.GetAddressOf()))
+	if (!loadShader(L"PositionTexcoord_vs.hlsl", "main", "vs_5_0", vs.GetAddressOf()))
 		return false;
 
 	ComPtr<ID3DBlob> ps;
-	if (!loadShader(L"../../Source/HLSL/PositionTexcoord_ps.hlsl", "main", "ps_5_0", ps.GetAddressOf()))
+	if (!loadShader(L"PositionTexcoord_ps.hlsl", "main", "ps_5_0", ps.GetAddressOf()))
 		return false;
 
 	hr = m_d3d11_device->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, m_vertex_shader.GetAddressOf());

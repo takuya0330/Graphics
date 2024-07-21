@@ -159,6 +159,7 @@ if %ERRORLEVEL%==1 ( exit 0 ) else ( exit /b %ERRORLEVEL% )</Command>
     <ClInclude Include="..\..\Source\Platform.h" />
     <ClInclude Include="..\..\Source\Win32\Debug.h" />
     <ClInclude Include="..\..\Source\Win32\Image.h" />
+    <ClInclude Include="..\..\Source\Win32\String.h" />
     <ClInclude Include="..\..\Source\Win32\Win32App.h" />
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +173,7 @@ if %ERRORLEVEL%==1 ( exit 0 ) else ( exit /b %ERRORLEVEL% )</Command>
     <ClCompile Include="..\..\Source\External\ImGui\imgui_tables.cpp" />
     <ClCompile Include="..\..\Source\External\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="..\..\Source\Win32\Image.cpp" />
+    <ClCompile Include="..\..\Source\Win32\String.cpp" />
     <ClCompile Include="..\..\Source\Win32\Win32App.cpp" />
     <ClCompile Include="..\..\Source\Win32\WinMain.cpp" />
   </ItemGroup>

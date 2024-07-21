@@ -479,6 +479,8 @@ bool D3D12App::loadShader(
     const wchar_t* shader_model,
     IDxcBlob**     blob)
 {
+	std::wstring hlsl = m_hlsl_dir + filename;
+
 	HRESULT hr = S_OK;
 
 	ComPtr<IDxcUtils> utils;
@@ -494,12 +496,12 @@ bool D3D12App::loadShader(
 	RETURN_FALSE_IF_FAILED(hr);
 
 	ComPtr<IDxcBlobEncoding> encoding;
-	hr = utils->LoadFile(filename, nullptr, encoding.GetAddressOf());
+	hr = utils->LoadFile(hlsl.c_str(), nullptr, encoding.GetAddressOf());
 	RETURN_FALSE_IF_FAILED(hr);
 
 	std::vector<const wchar_t*> args;
 	{
-		args.emplace_back(filename);
+		args.emplace_back(hlsl.c_str());
 
 		args.emplace_back(L"-E");
 		args.emplace_back(entry_point);

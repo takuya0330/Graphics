@@ -185,6 +185,8 @@ bool D3D11App::loadShader(
     const char*    shader_model,
     ID3DBlob**     blob)
 {
+	std::wstring hlsl = m_hlsl_dir + filename;
+
 	ComPtr<ID3DBlob> error;
 
 	UINT compile_flags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3;
@@ -192,7 +194,7 @@ bool D3D11App::loadShader(
 	compile_flags |= D3DCOMPILE_DEBUG;
 #endif
 
-	auto hr = D3DCompileFromFile(filename, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entry_point, shader_model, compile_flags, 0, blob, error.GetAddressOf());
+	auto hr = D3DCompileFromFile(hlsl.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entry_point, shader_model, compile_flags, 0, blob, error.GetAddressOf());
 	RETURN_FALSE_IF_FAILED(hr);
 
 	if (error)
