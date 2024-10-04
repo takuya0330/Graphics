@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source\D3D12">
+      <UniqueIdentifier>{48677b11-11e0-4f44-85a9-fff14d268d60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Win32">
+      <UniqueIdentifier>{ad67442f-946d-48ea-889f-af13eedb4b3e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\CoreApp.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Platform.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\Debug.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\Image.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\String.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\Win32App.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\D3D12\D3D12WaitableSwapChainApp.h">
+      <Filter>Source\D3D12</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source\Win32\Image.cpp">
+      <Filter>Source\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Win32\String.cpp">
+      <Filter>Source\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Win32\Win32App.cpp">
+      <Filter>Source\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Win32\WinMain.cpp">
+      <Filter>Source\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\D3D12\D3D12WaitableSwapChainApp.cpp">
+      <Filter>Source\D3D12</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
