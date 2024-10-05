@@ -4,6 +4,13 @@
 
 #include "Win32/Win32App.h"
 
+#define _D3D12_SET_NAME(obj, ...)    \
+	{                                \
+		wchar_t name[64] = {};       \
+		wsprintf(name, __VA_ARGS__); \
+		obj->SetName(name);          \
+	}
+
 class D3D12App : public Win32App
 {
 public:
@@ -21,7 +28,21 @@ protected:
 	virtual void OnRender() override;
 
 protected:
-	bool initD3D12(UINT num_back_buffers);
+	bool enableDebugLayer(UINT& dxgi_flags);
+
+	bool createFactory(UINT dxgi_flags);
+
+	bool searchAdapter();
+
+	bool createDevice();
+
+	bool createCommand();
+
+	bool createSwapChain();
+
+	bool createBackBuffer();
+
+	bool createFence();
 
 	void reset();
 
@@ -85,10 +106,14 @@ protected:
 	template<class T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-    template<class T>
+	template<class T>
 	using ComPtrs = std::vector<ComPtr<T>>;
 
 protected:
+	UINT                              m_num_back_buffers;
+	ComPtr<IDXGIFactory6>             m_factory;
+	ComPtrs<IDXGIAdapter1>            m_adapters;
+	int                               m_adapter_index;
 	ComPtr<ID3D12Device>              m_device;
 	ComPtr<ID3D12CommandQueue>        m_gfx_cmd_queue;
 	ComPtrs<ID3D12CommandAllocator>   m_gfx_cmd_allocators;

@@ -8,6 +8,10 @@
 
 D3D12App::D3D12App(LPCWSTR title, UINT width, UINT height)
     : Win32App(title, width, height)
+    , m_num_back_buffers(2)
+    , m_factory()
+    , m_adapters()
+    , m_adapter_index(-1)
     , m_device()
     , m_gfx_cmd_queue()
     , m_gfx_cmd_allocators()
@@ -26,7 +30,16 @@ D3D12App::D3D12App(LPCWSTR title, UINT width, UINT height)
 
 bool D3D12App::OnInitialize()
 {
-	ASSERT_RETURN(initD3D12(2), false);
+	UINT dxgi_flags = 0;
+	ASSERT_RETURN(enableDebugLayer(dxgi_flags), false);
+	ASSERT_RETURN(createFactory(dxgi_flags), false);
+	ASSERT_RETURN(searchAdapter(), false);
+	ASSERT_RETURN(createDevice(), false);
+	ASSERT_RETURN(createCommand(), false);
+	ASSERT_RETURN(createSwapChain(), false);
+	ASSERT_RETURN(createBackBuffer(), false);
+	ASSERT_RETURN(createFence(), false);
+
 	return true;
 }
 
@@ -50,131 +63,187 @@ void D3D12App::OnRender()
 	waitPreviousFrame();
 }
 
-bool D3D12App::initD3D12(UINT num_back_buffers)
+bool D3D12App::enableDebugLayer(UINT& dxgi_flags)
 {
-	m_gfx_cmd_allocators.resize(num_back_buffers);
-	m_back_buffers.resize(num_back_buffers);
-	m_fences.resize(num_back_buffers);
-	m_fence_values.resize(num_back_buffers);
-
 	HRESULT hr = S_OK;
-
-	UINT dxgi_flags = 0;
 #if defined(_DEBUG)
-	{
-		ComPtr<ID3D12Debug> d3d12_debug;
-		hr = ::D3D12GetDebugInterface(IID_PPV_ARGS(d3d12_debug.GetAddressOf()));
-		RETURN_FALSE_IF_FAILED(hr);
+	ComPtr<ID3D12Debug> d3d12_debug;
+	hr = ::D3D12GetDebugInterface(IID_PPV_ARGS(d3d12_debug.GetAddressOf()));
+	RETURN_FALSE_IF_FAILED(hr);
 
-		d3d12_debug->EnableDebugLayer();
-		dxgi_flags |= DXGI_CREATE_FACTORY_DEBUG;
+	d3d12_debug->EnableDebugLayer();
+	dxgi_flags |= DXGI_CREATE_FACTORY_DEBUG;
 
 #if ENABLE_GPU_BASED_VALIDATION
-		ComPtr<ID3D12Debug3> d3d12_debug3;
-		hr = d3d12_debug.As(&d3d12_debug3);
-		RETURN_FALSE_IF_FAILED(hr);
+	ComPtr<ID3D12Debug3> d3d12_debug3;
+	hr = d3d12_debug.As(&d3d12_debug3);
+	RETURN_FALSE_IF_FAILED(hr);
 
-		d3d12_debug3->SetEnableGPUBasedValidation(true);
+	d3d12_debug3->SetEnableGPUBasedValidation(true);
 #endif
-	}
 #endif
 
-	ComPtr<IDXGIFactory6> dxgi_factory6;
-	{
-		ComPtr<IDXGIFactory2> dxgi_factory2;
-		hr = ::CreateDXGIFactory2(dxgi_flags, IID_PPV_ARGS(dxgi_factory2.GetAddressOf()));
-		RETURN_FALSE_IF_FAILED(hr);
+	return true;
+}
 
-		hr = dxgi_factory2.As(&dxgi_factory6);
-		RETURN_FALSE_IF_FAILED(hr);
+bool D3D12App::createFactory(UINT dxgi_flags)
+{
+	HRESULT hr = S_OK;
+
+	ComPtr<IDXGIFactory2> dxgi_factory2;
+	hr = ::CreateDXGIFactory2(dxgi_flags, IID_PPV_ARGS(dxgi_factory2.GetAddressOf()));
+	RETURN_FALSE_IF_FAILED(hr);
+
+	hr = dxgi_factory2.As(&m_factory);
+	RETURN_FALSE_IF_FAILED(hr);
+
+	return true;
+}
+
+bool D3D12App::searchAdapter()
+{
+	HRESULT hr = S_OK;
+
+	for (UINT i = 0;; ++i)
+	{
+		ComPtr<IDXGIAdapter1> dxgi_adapter1;
+		hr = m_factory->EnumAdapters1(i, &dxgi_adapter1);
+		if (hr == DXGI_ERROR_NOT_FOUND)
+			break;
+
+		DXGI_ADAPTER_DESC1 desc;
+		dxgi_adapter1->GetDesc1(&desc);
+		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+			continue;
+
+		m_adapters.emplace_back(dxgi_adapter1);
 	}
 
-	ComPtr<IDXGIAdapter1> dxgi_adapter1;
+    if (m_adapters.empty())
+		return false;
+
+	UINT index = 0;
+	for (auto& it : m_adapters)
 	{
-		for (UINT i = 0; SUCCEEDED(dxgi_factory6->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(dxgi_adapter1.GetAddressOf()))); ++i)
-		{
-			DXGI_ADAPTER_DESC1 desc;
-			dxgi_adapter1->GetDesc1(&desc);
-			if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
-				continue;
+		DXGI_ADAPTER_DESC1 desc;
+		it->GetDesc1(&desc);
 
-			if (SUCCEEDED(::D3D12CreateDevice(dxgi_adapter1.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr)))
-				break;
-		}
+		Debug::Log(L"DXGI Adapter Info:\n");
+		Debug::Log(L"- Description          : %s\n", desc.Description);
+		Debug::Log(L"- VendorId             : %u\n", desc.VendorId);
+		Debug::Log(L"- DeviceId             : %u\n", desc.DeviceId);
+		Debug::Log(L"- SubSysId             : %u\n", desc.SubSysId);
+		Debug::Log(L"- Revision             : %u\n", desc.Revision);
+		Debug::Log(L"- DedicatedVideoMemory : %llu\n", desc.DedicatedVideoMemory);
+		Debug::Log(L"- DedicatedSystemMemory: %llu\n", desc.DedicatedSystemMemory);
+		Debug::Log(L"- SharedSystemMemory   : %llu\n", desc.SharedSystemMemory);
 
-		if (!dxgi_adapter1)
+		if (m_adapter_index == -1)
 		{
-			for (UINT i = 0; SUCCEEDED(dxgi_factory6->EnumAdapters1(i, &dxgi_adapter1)); ++i)
+			hr = ::D3D12CreateDevice(it.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr);
+			if (SUCCEEDED(hr))
 			{
-				DXGI_ADAPTER_DESC1 desc;
-				dxgi_adapter1->GetDesc1(&desc);
-				if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
-					continue;
-
-				if (SUCCEEDED(::D3D12CreateDevice(dxgi_adapter1.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr)))
-					break;
+				m_adapter_index = index;
 			}
 		}
+
+		++index;
 	}
 
-	{
-		hr = ::D3D12CreateDevice(dxgi_adapter1.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(m_device.GetAddressOf()));
-		RETURN_FALSE_IF_FAILED(hr);
-	}
+	RETURN_FALSE_IF_FAILED(hr);
 
+	return true;
+}
+
+bool D3D12App::createDevice()
+{
+	auto hr = ::D3D12CreateDevice(m_adapters.at(m_adapter_index).Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(m_device.GetAddressOf()));
+	RETURN_FALSE_IF_FAILED(hr);
+
+    _D3D12_SET_NAME(m_device, L"Device");
+
+	return true;
+}
+
+bool D3D12App::createCommand()
+{
+	m_gfx_cmd_allocators.resize(m_num_back_buffers);
+
+	if (!createCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT, m_gfx_cmd_queue.GetAddressOf()))
+		return false;
+	_D3D12_SET_NAME(m_gfx_cmd_queue, L"GraphicsCommandQueue");
+
+	for (auto& allocator : m_gfx_cmd_allocators)
 	{
-		if (!createCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT, m_gfx_cmd_queue.GetAddressOf()))
+		if (!createCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.GetAddressOf()))
 			return false;
 
-		for (auto& allocator : m_gfx_cmd_allocators)
-		{
-			if (!createCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.GetAddressOf()))
-				return false;
-		}
+        static int index = 0;
+		_D3D12_SET_NAME(allocator, L"GraphicsCommandAllocator%d", index++);
+	}
 
-		if (!createCommandList(D3D12_COMMAND_LIST_TYPE_DIRECT, m_gfx_cmd_allocators.at(0).Get(), m_gfx_cmd_list.GetAddressOf()))
+	if (!createCommandList(D3D12_COMMAND_LIST_TYPE_DIRECT, m_gfx_cmd_allocators.at(0).Get(), m_gfx_cmd_list.GetAddressOf()))
+		return false;
+	_D3D12_SET_NAME(m_gfx_cmd_list, L"GraphicsCommandList");
+
+    return true;
+}
+
+bool D3D12App::createSwapChain()
+{
+	HRESULT hr = S_OK;
+
+	m_back_buffers.resize(m_num_back_buffers);
+
+    DXGI_SWAP_CHAIN_DESC1 swap_chain_desc1 = {
+		.Width       = m_width,
+		.Height      = m_height,
+		.Format      = DXGI_FORMAT_R8G8B8A8_UNORM,
+		.Stereo      = false,
+		.SampleDesc  = {.Count = 1, .Quality = 0},
+		.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
+		.BufferCount = m_num_back_buffers,
+		.Scaling     = DXGI_SCALING_NONE,
+		.SwapEffect  = DXGI_SWAP_EFFECT_FLIP_DISCARD,
+		.AlphaMode   = DXGI_ALPHA_MODE_UNSPECIFIED,
+		.Flags       = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
+	};
+	ComPtr<IDXGISwapChain1> dxgi_swap_chain1;
+	hr = m_factory->CreateSwapChainForHwnd(m_gfx_cmd_queue.Get(), m_hwnd, &swap_chain_desc1, nullptr, nullptr, dxgi_swap_chain1.GetAddressOf());
+	RETURN_FALSE_IF_FAILED(hr);
+
+	hr = m_factory->MakeWindowAssociation(m_hwnd, DXGI_MWA_NO_ALT_ENTER);
+	RETURN_FALSE_IF_FAILED(hr);
+
+	hr = dxgi_swap_chain1.As(&m_swap_chain4);
+	RETURN_FALSE_IF_FAILED(hr);
+
+	m_back_buffer_index = m_swap_chain4->GetCurrentBackBufferIndex();
+
+    return true;
+}
+
+bool D3D12App::createBackBuffer()
+{
+	HRESULT hr = S_OK;
+
+	{
+		m_back_buffers.resize(m_num_back_buffers);
+
+		if (!createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, m_num_back_buffers, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, m_rtv_heap.GetAddressOf()))
 			return false;
-	}
-
-	{
-		DXGI_SWAP_CHAIN_DESC1 swap_chain_desc1 = {
-			.Width       = m_width,
-			.Height      = m_height,
-			.Format      = DXGI_FORMAT_R8G8B8A8_UNORM,
-			.Stereo      = false,
-			.SampleDesc  = {.Count = 1, .Quality = 0},
-			.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
-			.BufferCount = num_back_buffers,
-			.Scaling     = DXGI_SCALING_NONE,
-			.SwapEffect  = DXGI_SWAP_EFFECT_FLIP_DISCARD,
-			.AlphaMode   = DXGI_ALPHA_MODE_UNSPECIFIED,
-			.Flags       = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
-		};
-		ComPtr<IDXGISwapChain1> dxgi_swap_chain1;
-		hr = dxgi_factory6->CreateSwapChainForHwnd(m_gfx_cmd_queue.Get(), m_hwnd, &swap_chain_desc1, nullptr, nullptr, dxgi_swap_chain1.GetAddressOf());
-		RETURN_FALSE_IF_FAILED(hr);
-
-		hr = dxgi_factory6->MakeWindowAssociation(m_hwnd, DXGI_MWA_NO_ALT_ENTER);
-		RETURN_FALSE_IF_FAILED(hr);
-
-		hr = dxgi_swap_chain1.As(&m_swap_chain4);
-		RETURN_FALSE_IF_FAILED(hr);
-
-		m_back_buffer_index = m_swap_chain4->GetCurrentBackBufferIndex();
-	}
-
-	{
-		if (!createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, num_back_buffers, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, m_rtv_heap.GetAddressOf()))
-			return true;
+		_D3D12_SET_NAME(m_rtv_heap, L"RTVHeap");
 
 		m_rtv_heap_size = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 		auto handle = m_rtv_heap->GetCPUDescriptorHandleForHeapStart();
-		for (UINT i = 0; i < num_back_buffers; ++i)
+		for (UINT i = 0; i < m_num_back_buffers; ++i)
 		{
 			auto& back_buffer = m_back_buffers.at(i);
 			hr                = m_swap_chain4->GetBuffer(i, IID_PPV_ARGS(back_buffer.GetAddressOf()));
 			RETURN_FALSE_IF_FAILED(hr);
+
+            _D3D12_SET_NAME(back_buffer, L"BackBuffer%u", i);
 
 			m_device->CreateRenderTargetView(back_buffer.Get(), nullptr, handle);
 			handle.ptr += m_rtv_heap_size;
@@ -183,7 +252,8 @@ bool D3D12App::initD3D12(UINT num_back_buffers)
 
 	{
 		if (!createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, m_dsv_heap.GetAddressOf()))
-			return true;
+			return false;
+		_D3D12_SET_NAME(m_dsv_heap, L"DSVHeap");
 
 		D3D12_CLEAR_VALUE d3d12_clear_value = {
 			.Format       = DXGI_FORMAT_D32_FLOAT,
@@ -200,6 +270,7 @@ bool D3D12App::initD3D12(UINT num_back_buffers)
 		        &d3d12_clear_value,
 		        m_depth_buffer.GetAddressOf()))
 			return false;
+		_D3D12_SET_NAME(m_depth_buffer, L"DepthBuffer");
 
 		D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc = {
 			.Format        = DXGI_FORMAT_D32_FLOAT,
@@ -211,14 +282,25 @@ bool D3D12App::initD3D12(UINT num_back_buffers)
 		m_device->CreateDepthStencilView(m_depth_buffer.Get(), &dsv_desc, handle);
 	}
 
+    return true;
+}
+
+bool D3D12App::createFence()
+{
+	HRESULT hr = S_OK;
+
+    m_fences.resize(m_num_back_buffers);
+	m_fence_values.resize(m_num_back_buffers);
+
+	for (auto& fence : m_fences)
 	{
-		for (auto& fence : m_fences)
-		{
-			hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf()));
-			RETURN_FALSE_IF_FAILED(hr);
-		}
-		std::fill(m_fence_values.begin(), m_fence_values.end(), 0);
+		hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf()));
+		RETURN_FALSE_IF_FAILED(hr);
+
+        static int index = 0;
+		_D3D12_SET_NAME(fence, L"Fence%d", index++);
 	}
+	std::fill(m_fence_values.begin(), m_fence_values.end(), 0);
 
     return true;
 }
