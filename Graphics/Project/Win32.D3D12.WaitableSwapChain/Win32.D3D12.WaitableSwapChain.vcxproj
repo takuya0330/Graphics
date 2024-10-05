@@ -117,6 +117,9 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreLinkEvent>
+      <Command>$(ProjectDir)..\..\Tool\CopyDLLForDXC.bat $(OutDir)</Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -135,9 +138,13 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreLinkEvent>
+      <Command>$(ProjectDir)..\..\Tool\CopyDLLForDXC.bat $(OutDir)</Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\CoreApp.h" />
+    <ClInclude Include="..\..\Source\D3D12\D3D12App.h" />
     <ClInclude Include="..\..\Source\D3D12\D3D12WaitableSwapChainApp.h" />
     <ClInclude Include="..\..\Source\Platform.h" />
     <ClInclude Include="..\..\Source\Win32\Debug.h" />
@@ -146,6 +153,7 @@
     <ClInclude Include="..\..\Source\Win32\Win32App.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\D3D12\D3D12App.cpp" />
     <ClCompile Include="..\..\Source\D3D12\D3D12WaitableSwapChainApp.cpp" />
     <ClCompile Include="..\..\Source\Win32\Image.cpp" />
     <ClCompile Include="..\..\Source\Win32\String.cpp" />
