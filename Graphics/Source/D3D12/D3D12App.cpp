@@ -26,6 +26,37 @@ D3D12App::D3D12App(LPCWSTR title, UINT width, UINT height)
 
 bool D3D12App::OnInitialize()
 {
+	ASSERT_RETURN(initD3D12(2), false);
+	return true;
+}
+
+void D3D12App::OnFinalize()
+{
+	waitForGPU(m_gfx_cmd_queue.Get());
+}
+
+void D3D12App::OnUpdate()
+{
+}
+
+void D3D12App::OnRender()
+{
+	reset();
+	setViewport(static_cast<float>(m_width), static_cast<float>(m_height));
+	setScissorRect(static_cast<LONG>(m_width), static_cast<LONG>(m_height));
+	setBackBuffer();
+	executeCommandList();
+	present(1);
+	waitPreviousFrame();
+}
+
+bool D3D12App::initD3D12(UINT num_back_buffers)
+{
+	m_gfx_cmd_allocators.resize(num_back_buffers);
+	m_back_buffers.resize(num_back_buffers);
+	m_fences.resize(num_back_buffers);
+	m_fence_values.resize(num_back_buffers);
+
 	HRESULT hr = S_OK;
 
 	UINT dxgi_flags = 0;
@@ -113,7 +144,7 @@ bool D3D12App::OnInitialize()
 			.Stereo      = false,
 			.SampleDesc  = {.Count = 1, .Quality = 0},
 			.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
-			.BufferCount = kBackBufferCount,
+			.BufferCount = num_back_buffers,
 			.Scaling     = DXGI_SCALING_NONE,
 			.SwapEffect  = DXGI_SWAP_EFFECT_FLIP_DISCARD,
 			.AlphaMode   = DXGI_ALPHA_MODE_UNSPECIFIED,
@@ -133,13 +164,13 @@ bool D3D12App::OnInitialize()
 	}
 
 	{
-		if (!createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, kBackBufferCount, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, m_rtv_heap.GetAddressOf()))
+		if (!createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, num_back_buffers, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, m_rtv_heap.GetAddressOf()))
 			return true;
 
 		m_rtv_heap_size = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 		auto handle = m_rtv_heap->GetCPUDescriptorHandleForHeapStart();
-		for (UINT i = 0; i < kBackBufferCount; ++i)
+		for (UINT i = 0; i < num_back_buffers; ++i)
 		{
 			auto& back_buffer = m_back_buffers.at(i);
 			hr                = m_swap_chain4->GetBuffer(i, IID_PPV_ARGS(back_buffer.GetAddressOf()));
@@ -186,30 +217,10 @@ bool D3D12App::OnInitialize()
 			hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf()));
 			RETURN_FALSE_IF_FAILED(hr);
 		}
-		m_fence_values.fill(0);
+		std::fill(m_fence_values.begin(), m_fence_values.end(), 0);
 	}
 
-	return true;
-}
-
-void D3D12App::OnFinalize()
-{
-	waitForGPU(m_gfx_cmd_queue.Get());
-}
-
-void D3D12App::OnUpdate()
-{
-}
-
-void D3D12App::OnRender()
-{
-	reset();
-	setViewport(static_cast<float>(m_width), static_cast<float>(m_height));
-	setScissorRect(static_cast<LONG>(m_width), static_cast<LONG>(m_height));
-	setBackBuffer();
-	executeCommandList();
-	present(1);
-	waitPreviousFrame();
+    return true;
 }
 
 void D3D12App::reset()
