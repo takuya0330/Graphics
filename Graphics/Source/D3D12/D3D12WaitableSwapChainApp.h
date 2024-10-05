@@ -81,7 +81,7 @@ protected:
 	template<class T>
 	using ComPtr3 = Array3<ComPtr<T>>;
 
-private:
+protected:
 	ComPtr<ID3D12Device>              m_device;
 	ComPtr<ID3D12CommandQueue>        m_gfx_cmd_queue;
 	ComPtr3<ID3D12CommandAllocator>   m_gfx_cmd_allocators;

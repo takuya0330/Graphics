@@ -1,6 +1,8 @@
 ﻿#include "CoreApp.h"
 
 #if 0
+#elif _WIN32 && _D3D12 && _RESIZE_BUFFERS
+#include "D3D12/D3D12ResizeBuffersApp.h"
 #elif _WIN32 && _D3D12 && _WAITABLE_SWAP_CHAIN
 #include "D3D12/D3D12WaitableSwapChainApp.h"
 #elif _WIN32 && _D3D12 && _TEXTURE
@@ -40,6 +42,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	{
 		std::unique_ptr<CoreApp> app;
 #if 0
+#elif _WIN32 && _D3D12 && _RESIZE_BUFFERS
+		app = std::make_unique<D3D12ResizeBuffersApp>(L"D3D12 ResizeBuffers", kWidth, kHeight);
 #elif _WIN32 && _D3D12 && _WAITABLE_SWAP_CHAIN
 		app = std::make_unique<D3D12WaitableSwapChainApp>(L"D3D12 WaitableSwapChain", kWidth, kHeight);
 #elif _WIN32 && _D3D12 && _TEXTURE
