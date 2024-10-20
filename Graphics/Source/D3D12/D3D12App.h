@@ -90,6 +90,18 @@ protected:
 	    const D3D12_HEAP_TYPE       heap_type,
 	    const UINT64                width,
 	    const UINT                  height,
+	    const UINT16                array_size,
+	    const UINT16                mip_levels,
+	    const DXGI_FORMAT           format,
+	    const D3D12_RESOURCE_FLAGS  flags,
+	    const D3D12_RESOURCE_STATES state,
+	    const D3D12_CLEAR_VALUE*    clear_value,
+	    ID3D12Resource**            resource);
+
+	bool createTexture2D(
+	    const D3D12_HEAP_TYPE       heap_type,
+	    const UINT64                width,
+	    const UINT                  height,
 	    const DXGI_FORMAT           format,
 	    const D3D12_RESOURCE_FLAGS  flags,
 	    const D3D12_RESOURCE_STATES state,

@@ -119,7 +119,7 @@ bool D3D12App::searchAdapter()
 		m_adapters.emplace_back(dxgi_adapter1);
 	}
 
-    if (m_adapters.empty())
+	if (m_adapters.empty())
 		return false;
 
 	UINT index = 0;
@@ -160,7 +160,7 @@ bool D3D12App::createDevice()
 	auto hr = ::D3D12CreateDevice(m_adapters.at(m_adapter_index).Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(m_device.GetAddressOf()));
 	RETURN_FALSE_IF_FAILED(hr);
 
-    _D3D12_SET_NAME(m_device, L"Device");
+	_D3D12_SET_NAME(m_device, L"Device");
 
 	return true;
 }
@@ -178,7 +178,7 @@ bool D3D12App::createCommand()
 		if (!createCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.GetAddressOf()))
 			return false;
 
-        static int index = 0;
+		static int index = 0;
 		_D3D12_SET_NAME(allocator, L"GraphicsCommandAllocator%d", index++);
 	}
 
@@ -186,7 +186,7 @@ bool D3D12App::createCommand()
 		return false;
 	_D3D12_SET_NAME(m_gfx_cmd_list, L"GraphicsCommandList");
 
-    return true;
+	return true;
 }
 
 bool D3D12App::createSwapChain()
@@ -195,7 +195,7 @@ bool D3D12App::createSwapChain()
 
 	m_back_buffers.resize(m_num_back_buffers);
 
-    DXGI_SWAP_CHAIN_DESC1 swap_chain_desc1 = {
+	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc1 = {
 		.Width       = m_width,
 		.Height      = m_height,
 		.Format      = DXGI_FORMAT_R8G8B8A8_UNORM,
@@ -220,7 +220,7 @@ bool D3D12App::createSwapChain()
 
 	m_back_buffer_index = m_swap_chain4->GetCurrentBackBufferIndex();
 
-    return true;
+	return true;
 }
 
 bool D3D12App::createBackBuffer()
@@ -243,7 +243,7 @@ bool D3D12App::createBackBuffer()
 			hr                = m_swap_chain4->GetBuffer(i, IID_PPV_ARGS(back_buffer.GetAddressOf()));
 			RETURN_FALSE_IF_FAILED(hr);
 
-            _D3D12_SET_NAME(back_buffer, L"BackBuffer%u", i);
+			_D3D12_SET_NAME(back_buffer, L"BackBuffer%u", i);
 
 			m_device->CreateRenderTargetView(back_buffer.Get(), nullptr, handle);
 			handle.ptr += m_rtv_heap_size;
@@ -282,14 +282,14 @@ bool D3D12App::createBackBuffer()
 		m_device->CreateDepthStencilView(m_depth_buffer.Get(), &dsv_desc, handle);
 	}
 
-    return true;
+	return true;
 }
 
 bool D3D12App::createFence()
 {
 	HRESULT hr = S_OK;
 
-    m_fences.resize(m_num_back_buffers);
+	m_fences.resize(m_num_back_buffers);
 	m_fence_values.resize(m_num_back_buffers);
 
 	for (auto& fence : m_fences)
@@ -297,12 +297,12 @@ bool D3D12App::createFence()
 		hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf()));
 		RETURN_FALSE_IF_FAILED(hr);
 
-        static int index = 0;
+		static int index = 0;
 		_D3D12_SET_NAME(fence, L"Fence%d", index++);
 	}
 	std::fill(m_fence_values.begin(), m_fence_values.end(), 0);
 
-    return true;
+	return true;
 }
 
 void D3D12App::reset()
@@ -533,6 +533,21 @@ bool D3D12App::createTexture2D(
     const D3D12_CLEAR_VALUE*    clear_value,
     ID3D12Resource**            resource)
 {
+	return createTexture2D(heap_type, width, height, 1, 0, format, flags, state, clear_value, resource);
+}
+
+bool D3D12App::createTexture2D(
+    const D3D12_HEAP_TYPE       heap_type,
+    const UINT64                width,
+    const UINT                  height,
+    const UINT16                array_size,
+    const UINT16                mip_levels,
+    const DXGI_FORMAT           format,
+    const D3D12_RESOURCE_FLAGS  flags,
+    const D3D12_RESOURCE_STATES state,
+    const D3D12_CLEAR_VALUE*    clear_value,
+    ID3D12Resource**            resource)
+{
 	D3D12_HEAP_PROPERTIES heap_properties = {
 		.Type                 = heap_type,
 		.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
@@ -546,8 +561,8 @@ bool D3D12App::createTexture2D(
 		.Alignment        = 0,
 		.Width            = width,
 		.Height           = height,
-		.DepthOrArraySize = 1,
-		.MipLevels        = 0,
+		.DepthOrArraySize = array_size,
+		.MipLevels        = mip_levels,
 		.Format           = format,
 		.SampleDesc       = {.Count = 1, .Quality = 0},
 		.Layout           = D3D12_TEXTURE_LAYOUT_UNKNOWN,
