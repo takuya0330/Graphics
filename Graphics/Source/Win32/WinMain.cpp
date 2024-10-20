@@ -1,6 +1,8 @@
 ﻿#include "CoreApp.h"
 
 #if 0
+#elif _WIN32 && _D3D12 && _CONSTANT_BUFFER
+#include "D3D12/D3D12ConstantBufferApp.h"
 #elif _WIN32 && _D3D12 && _DDS_TEXTURE
 #include "D3D12/D3D12DDSTextureApp.h"
 #elif _WIN32 && _D3D12 && _RESIZE_BUFFERS
@@ -44,6 +46,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	{
 		std::unique_ptr<CoreApp> app;
 #if 0
+#elif _WIN32 && _D3D12 && _CONSTANT_BUFFER
+		app = std::make_unique<D3D12ConstantBufferApp>(L"D3D12 ConstantBuffer", kWidth, kHeight);
 #elif _WIN32 && _D3D12 && _DDS_TEXTURE
 		app = std::make_unique<D3D12DDSTextureApp>(L"D3D12 DDSTexture", kWidth, kHeight);
 #elif _WIN32 && _D3D12 && _RESIZE_BUFFERS

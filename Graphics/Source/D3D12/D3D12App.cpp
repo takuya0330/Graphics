@@ -468,13 +468,13 @@ bool D3D12App::createCommandList(
 
 bool D3D12App::createDescriptorHeap(
     const D3D12_DESCRIPTOR_HEAP_TYPE  heap_type,
-    const UINT                        size,
+    const UINT                        num_descriptors,
     const D3D12_DESCRIPTOR_HEAP_FLAGS flags,
     ID3D12DescriptorHeap**            descriptor_heap)
 {
 	D3D12_DESCRIPTOR_HEAP_DESC dsv_heap_desc = {
 		.Type           = heap_type,
-		.NumDescriptors = size,
+		.NumDescriptors = num_descriptors,
 		.Flags          = flags,
 		.NodeMask       = 0
 	};

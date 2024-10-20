@@ -76,7 +76,7 @@ protected:
 
 	bool createDescriptorHeap(
 	    const D3D12_DESCRIPTOR_HEAP_TYPE  heap_type,
-	    const UINT                        size,
+	    const UINT                        num_descriptors,
 	    const D3D12_DESCRIPTOR_HEAP_FLAGS flags,
 	    ID3D12DescriptorHeap**            descriptor_heap);
 
@@ -113,6 +113,13 @@ protected:
 	    const wchar_t* entry_point,
 	    const wchar_t* shader_model,
 	    IDxcBlob**     blob);
+
+protected:
+	template<typename T>
+	T calcAlignment(T size, T alignment)
+	{
+		return (size + (alignment - 1)) & ~(alignment - 1);
+	}
 
 protected:
 	template<class T>
