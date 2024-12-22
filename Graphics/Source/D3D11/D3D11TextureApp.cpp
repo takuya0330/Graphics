@@ -143,6 +143,7 @@ bool D3D11TextureApp::OnInitialize()
 	hr = m_d3d11_device->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, m_vertex_shader.GetAddressOf());
 	RETURN_FALSE_IF_FAILED(hr);
 
+#if 0
 	D3D11_INPUT_ELEMENT_DESC input_layout[] = {
 		{"POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -152,6 +153,13 @@ bool D3D11TextureApp::OnInitialize()
 
 	hr = m_d3d11_device->CreatePixelShader(ps->GetBufferPointer(), ps->GetBufferSize(), nullptr, m_pixel_shader.GetAddressOf());
 	RETURN_FALSE_IF_FAILED(hr);
+#else
+	if (!createVertexShader(vs.Get(), m_vertex_shader.GetAddressOf(), m_input_layout.GetAddressOf()))
+		return false;
+
+	if (!createPixelShader(ps.Get(), m_pixel_shader.GetAddressOf()))
+		return false;
+#endif
 
 	return true;
 }

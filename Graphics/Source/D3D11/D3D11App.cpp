@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "Win32/String.h"
+
 D3D11App::D3D11App(LPCWSTR title, UINT width, UINT height)
     : Win32App(title, width, height)
     , m_d3d11_device()
@@ -202,6 +204,98 @@ bool D3D11App::loadShader(
 		Debug::Log("%s\n", static_cast<char*>(error->GetBufferPointer()));
 		return false;
 	}
+
+	return true;
+}
+
+bool D3D11App::createVertexShader(
+    ID3DBlob*            blob,
+    ID3D11VertexShader** vertex_shader,
+    ID3D11InputLayout**  input_layout)
+{
+	ComPtr<ID3D11ShaderReflection> d3d11_shader_reflection;
+
+	auto hr = D3DReflect(
+	    blob->GetBufferPointer(),
+	    blob->GetBufferSize(),
+	    IID_PPV_ARGS(d3d11_shader_reflection.GetAddressOf()));
+	RETURN_FALSE_IF_FAILED(hr);
+
+	D3D11_SHADER_DESC d3d11_shader_desc = {};
+	d3d11_shader_reflection->GetDesc(&d3d11_shader_desc);
+
+	std::vector<D3D11_INPUT_ELEMENT_DESC> d3d11_input_element_descs;
+	d3d11_input_element_descs.reserve(d3d11_shader_desc.InputParameters);
+
+	for (uint32_t i = 0; i < d3d11_shader_desc.InputParameters; ++i)
+	{
+		D3D11_SIGNATURE_PARAMETER_DESC d3d11_sig_param_desc = {};
+		d3d11_shader_reflection->GetInputParameterDesc(i, &d3d11_sig_param_desc);
+
+		const bool is_instance      = std::string("INSTANCE").find(d3d11_sig_param_desc.SemanticName) != std::string::npos;
+		const auto input_slot       = is_instance ? i * 4 : 0;
+		const auto input_slot_class = is_instance ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
+
+#define REGISTER_COMPONENT(x, y) D3D_REGISTER_COMPONENT_##x##y
+#define CONVERT_FORMAT(TYPE)                          \
+	case REGISTER_COMPONENT(TYPE, 32):                \
+		if (d3d11_sig_param_desc.Mask == 0x0F)        \
+		{                                             \
+			format = DXGI_FORMAT_R32G32B32A32_##TYPE; \
+		}                                             \
+		else if (d3d11_sig_param_desc.Mask == 0x07)   \
+		{                                             \
+			format = DXGI_FORMAT_R32G32B32_##TYPE;    \
+		}                                             \
+		else if (d3d11_sig_param_desc.Mask == 0x03)   \
+		{                                             \
+			format = DXGI_FORMAT_R32G32_##TYPE;       \
+		}                                             \
+		else if (d3d11_sig_param_desc.Mask == 0x01)   \
+		{                                             \
+			format = DXGI_FORMAT_R32_##TYPE;          \
+		}                                             \
+		break
+
+		DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
+		switch (d3d11_sig_param_desc.ComponentType)
+		{
+			CONVERT_FORMAT(UINT);
+			CONVERT_FORMAT(SINT);
+			CONVERT_FORMAT(FLOAT);
+		default:
+			ASSERT_RETURN(0, false);
+		}
+
+		D3D11_INPUT_ELEMENT_DESC d3d11_input_element_desc = {
+			d3d11_sig_param_desc.SemanticName,
+			d3d11_sig_param_desc.SemanticIndex,
+			format,
+			input_slot,
+			D3D11_APPEND_ALIGNED_ELEMENT,
+			input_slot_class,
+			0
+		};
+		d3d11_input_element_descs.push_back(d3d11_input_element_desc);
+	}
+
+	hr = m_d3d11_device->CreateInputLayout(
+	    d3d11_input_element_descs.data(),
+	    static_cast<UINT>(d3d11_input_element_descs.size()),
+	    blob->GetBufferPointer(),
+	    blob->GetBufferSize(),
+	    input_layout);
+	RETURN_FALSE_IF_FAILED(hr);
+
+	return true;
+}
+
+bool D3D11App::createPixelShader(
+    ID3DBlob*           blob,
+    ID3D11PixelShader** pixel_shader)
+{
+	auto hr = m_d3d11_device->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, pixel_shader);
+	RETURN_FALSE_IF_FAILED(hr);
 
 	return true;
 }
