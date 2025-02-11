@@ -91,4 +91,4 @@ inline void Log(const wchar_t* format, ...)
 		}                                                 \
 	} while (false)
 
-#define ENABLE_IMGUI_DEMO_WINDOW 0
+#define ENABLE_IMGUI_DEMO_WINDOW 1
