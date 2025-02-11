@@ -37,7 +37,7 @@ bool D3D12ImGuiApp::OnInitialize()
 
 	auto imgui_cpu_handle = m_imgui_heap->GetCPUDescriptorHandleForHeapStart();
 	auto imgui_gpu_handle = m_imgui_heap->GetGPUDescriptorHandleForHeapStart();
-	ASSERT_RETURN(ImGui_ImplDX12_Init(m_device.Get(), kBackBufferCount, DXGI_FORMAT_R8G8B8A8_UNORM, m_imgui_heap.Get(), imgui_cpu_handle, imgui_gpu_handle), false);
+	ASSERT_RETURN(ImGui_ImplDX12_Init(m_device.Get(), m_num_back_buffers, DXGI_FORMAT_R8G8B8A8_UNORM, m_imgui_heap.Get(), imgui_cpu_handle, imgui_gpu_handle), false);
 
 	return true;
 }
