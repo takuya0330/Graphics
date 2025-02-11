@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source\D3D12">
+      <UniqueIdentifier>{616353ad-e2f5-4e69-b5f8-3dd1e7b34bbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Win32">
+      <UniqueIdentifier>{edd4cce0-802f-467a-bbd3-9fb311ba59d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\External">
+      <UniqueIdentifier>{41cbb277-8b9c-45d2-a11f-b18338c0fe7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\External\backends">
+      <UniqueIdentifier>{1d8ecf49-6414-4a34-ae04-fd6b405c5644}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\CoreApp.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Platform.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\D3D12\D3D12App.h">
+      <Filter>Source\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\Debug.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\String.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\Win32App.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\D3D12\D3D12DisplayChangedApp.h">
+      <Filter>Source\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Win32\Display.h">
+      <Filter>Source\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\External\ImGui\imconfig.h">
+      <Filter>Source\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\External\ImGui\imgui.h">
+      <Filter>Source\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\External\ImGui\imgui_internal.h">
+      <Filter>Source\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\External\ImGui\imstb_rectpack.h">
+      <Filter>Source\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\External\ImGui\imstb_textedit.h">
+      <Filter>Source\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\External\ImGui\imstb_truetype.h">
+      <Filter>Source\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\External\ImGui\backends\imgui_impl_dx12.h">
+      <Filter>Source\External\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\External\ImGui\backends\imgui_impl_win32.h">
+      <Filter>Source\External\backends</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source\D3D12\D3D12App.cpp">
+      <Filter>Source\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Win32\String.cpp">
+      <Filter>Source\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Win32\Win32App.cpp">
+      <Filter>Source\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Win32\WinMain.cpp">
+      <Filter>Source\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\D3D12\D3D12DisplayChangedApp.cpp">
+      <Filter>Source\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\External\ImGui\imgui.cpp">
+      <Filter>Source\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\External\ImGui\imgui_demo.cpp">
+      <Filter>Source\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\External\ImGui\imgui_draw.cpp">
+      <Filter>Source\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\External\ImGui\imgui_tables.cpp">
+      <Filter>Source\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\External\ImGui\imgui_widgets.cpp">
+      <Filter>Source\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\External\ImGui\backends\imgui_impl_dx12.cpp">
+      <Filter>Source\External\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\External\ImGui\backends\imgui_impl_win32.cpp">
+      <Filter>Source\External\backends</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
