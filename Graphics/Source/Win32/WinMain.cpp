@@ -1,6 +1,8 @@
 ﻿#include "CoreApp.h"
 
 #if 0
+#elif _WIN32 && _D3D12 && _GPU_TIMER
+#include "D3D12/D3D12GPUTimerApp.h"
 #elif _WIN32 && _D3D12 && _DISPLAY_CHANGED
 #include "D3D12/D3D12DisplayChangedApp.h"
 #elif _WIN32 && _D3D12 && _CONSTANT_BUFFER
@@ -48,6 +50,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	{
 		std::unique_ptr<CoreApp> app;
 #if 0
+#elif _WIN32 && _D3D12 && _GPU_TIMER
+		app = std::make_unique<D3D12GPUTimerApp>(L"D3D12 GPU Timer", kWidth, kHeight);
 #elif _WIN32 && _D3D12 && _DISPLAY_CHANGED
 		app = std::make_unique<D3D12DisplayChangedApp>(L"D3D12 DisplayChangged", 1920, 1080);
 #elif _WIN32 && _D3D12 && _CONSTANT_BUFFER
