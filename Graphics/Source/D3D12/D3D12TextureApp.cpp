@@ -47,10 +47,10 @@ bool D3D12TextureApp::OnInitialize()
 	ComPtr<ID3D12Resource> upload_vbuffer;
 	{
 		const Vertex vertices[] = {
-			{{ -0.5, +0.5 * m_aspect_ratio, 0 },  { 0, 0 }},
-			{ { +0.5, +0.5 * m_aspect_ratio, 0 }, { 1, 0 }},
-			{ { -0.5, -0.5 * m_aspect_ratio, 0 }, { 0, 1 }},
-			{ { +0.5, -0.5 * m_aspect_ratio, 0 }, { 1, 1 }},
+			{ { -0.5, +0.5 * m_aspect_ratio, 0 }, { 0, 0 } },
+			{ { +0.5, +0.5 * m_aspect_ratio, 0 }, { 1, 0 } },
+			{ { -0.5, -0.5 * m_aspect_ratio, 0 }, { 0, 1 } },
+			{ { +0.5, -0.5 * m_aspect_ratio, 0 }, { 1, 1 } },
 		};
 
 		if (!createBuffer(D3D12_HEAP_TYPE_DEFAULT, sizeof(vertices), D3D12_RESOURCE_STATE_COMMON, m_vertex_buffer.GetAddressOf()))
@@ -181,8 +181,8 @@ bool D3D12TextureApp::OnInitialize()
 	HRESULT hr = S_OK;
 
 	D3D12_INPUT_ELEMENT_DESC input_layout[] = {
-		{"POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	};
 
 	{

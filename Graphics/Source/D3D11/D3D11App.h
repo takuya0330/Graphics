@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <array>
-
 #include "Win32/Win32App.h"
+
+#include <array>
 
 class D3D11App : public Win32App
 {
@@ -34,12 +34,12 @@ protected:
 	    const char*    shader_model,
 	    ID3DBlob**     blob);
 
-    bool createVertexShader(
+	bool createVertexShader(
 	    ID3DBlob*            blob,
 	    ID3D11VertexShader** vertex_shader,
 	    ID3D11InputLayout**  input_layout);
 
-    bool createPixelShader(
+	bool createPixelShader(
 	    ID3DBlob*           blob,
 	    ID3D11PixelShader** pixel_shader);
 

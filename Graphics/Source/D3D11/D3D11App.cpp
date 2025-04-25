@@ -1,8 +1,8 @@
 ﻿#include "D3D11App.h"
 
-#include <vector>
-
 #include "Win32/String.h"
+
+#include <vector>
 
 D3D11App::D3D11App(LPCWSTR title, UINT width, UINT height)
     : Win32App(title, width, height)

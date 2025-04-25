@@ -1,9 +1,8 @@
 ﻿#pragma once
 
-#include <winerror.h>
-
 #include <cassert>
 #include <iostream>
+#include <winerror.h>
 
 namespace Debug {
 

@@ -33,10 +33,10 @@ bool D3D11TextureApp::OnInitialize()
 
 	{
 		const Vertex vertices[] = {
-			{{ -0.5, +0.5 * m_aspect_ratio, 0 },  { 0, 0 }},
-			{ { +0.5, +0.5 * m_aspect_ratio, 0 }, { 1, 0 }},
-			{ { -0.5, -0.5 * m_aspect_ratio, 0 }, { 0, 1 }},
-			{ { +0.5, -0.5 * m_aspect_ratio, 0 }, { 1, 1 }},
+			{ { -0.5, +0.5 * m_aspect_ratio, 0 }, { 0, 0 } },
+			{ { +0.5, +0.5 * m_aspect_ratio, 0 }, { 1, 0 } },
+			{ { -0.5, -0.5 * m_aspect_ratio, 0 }, { 0, 1 } },
+			{ { +0.5, -0.5 * m_aspect_ratio, 0 }, { 1, 1 } },
 		};
 
 		D3D11_BUFFER_DESC buffer_desc = {};

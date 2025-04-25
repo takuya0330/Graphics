@@ -22,8 +22,10 @@
 #include <d3dcompiler.h>
 #include <dxgi1_6.h>
 #include <wrl.h>
-
 namespace MSWRL = Microsoft::WRL;
+
+#include "External/DirectXMathHepler/DirectXMathHelper.h"
+using namespace XMH;
 
 #elif defined(_D3D12)
 
@@ -36,10 +38,9 @@ namespace MSWRL = Microsoft::WRL;
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <wrl.h>
+namespace MSWRL = Microsoft::WRL;
 
 #include "External/DirectXShaderCompiler/inc/dxcapi.h"
-
-namespace MSWRL = Microsoft::WRL;
 
 #endif
 #endif
