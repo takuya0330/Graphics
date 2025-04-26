@@ -33,6 +33,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32.D3D12.DisplayChanged"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32.D3D12.GPUTimer", "Project\Win32.D3D12.GPUTimer\Win32.D3D12.GPUTimer.vcxproj", "{181F0B70-41E4-4442-9D3B-E53F1A52386B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32.D3D12.RayTracing.Triangle", "Project\Win32.D3D12.RayTracing.Triangle\Win32.D3D12.RayTracing.Triangle.vcxproj", "{6C463E16-A27A-4393-A3D9-2F8A5BBCBAF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -161,6 +163,14 @@ Global
 		{181F0B70-41E4-4442-9D3B-E53F1A52386B}.Release|x64.Build.0 = Release|x64
 		{181F0B70-41E4-4442-9D3B-E53F1A52386B}.Release|x86.ActiveCfg = Release|Win32
 		{181F0B70-41E4-4442-9D3B-E53F1A52386B}.Release|x86.Build.0 = Release|Win32
+		{6C463E16-A27A-4393-A3D9-2F8A5BBCBAF9}.Debug|x64.ActiveCfg = Debug|x64
+		{6C463E16-A27A-4393-A3D9-2F8A5BBCBAF9}.Debug|x64.Build.0 = Debug|x64
+		{6C463E16-A27A-4393-A3D9-2F8A5BBCBAF9}.Debug|x86.ActiveCfg = Debug|Win32
+		{6C463E16-A27A-4393-A3D9-2F8A5BBCBAF9}.Debug|x86.Build.0 = Debug|Win32
+		{6C463E16-A27A-4393-A3D9-2F8A5BBCBAF9}.Release|x64.ActiveCfg = Release|x64
+		{6C463E16-A27A-4393-A3D9-2F8A5BBCBAF9}.Release|x64.Build.0 = Release|x64
+		{6C463E16-A27A-4393-A3D9-2F8A5BBCBAF9}.Release|x86.ActiveCfg = Release|Win32
+		{6C463E16-A27A-4393-A3D9-2F8A5BBCBAF9}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

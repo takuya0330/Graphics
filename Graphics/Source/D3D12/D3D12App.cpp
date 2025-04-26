@@ -200,7 +200,7 @@ bool D3D12App::createSwapChain()
 		.Height      = m_height,
 		.Format      = DXGI_FORMAT_R8G8B8A8_UNORM,
 		.Stereo      = false,
-		.SampleDesc  = {.Count = 1, .Quality = 0},
+		.SampleDesc  = { .Count = 1, .Quality = 0 },
 		.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
 		.BufferCount = m_num_back_buffers,
 		.Scaling     = DXGI_SCALING_NONE,
@@ -257,7 +257,7 @@ bool D3D12App::createBackBuffer()
 
 		D3D12_CLEAR_VALUE d3d12_clear_value = {
 			.Format       = DXGI_FORMAT_D32_FLOAT,
-			.DepthStencil = {.Depth = 1.0f, .Stencil = 0}
+			.DepthStencil = { .Depth = 1.0f, .Stencil = 0 }
 		};
 
 		if (!createTexture2D(
@@ -487,6 +487,7 @@ bool D3D12App::createDescriptorHeap(
 bool D3D12App::createBuffer(
     const D3D12_HEAP_TYPE       heap_type,
     const UINT64                size,
+    const D3D12_RESOURCE_FLAGS  flags,
     const D3D12_RESOURCE_STATES state,
     ID3D12Resource**            resource)
 {
@@ -506,9 +507,9 @@ bool D3D12App::createBuffer(
 		.DepthOrArraySize = 1,
 		.MipLevels        = 1,
 		.Format           = DXGI_FORMAT_UNKNOWN,
-		.SampleDesc       = {.Count = 1, .Quality = 0},
+		.SampleDesc       = { .Count = 1, .Quality = 0 },
 		.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-		.Flags            = D3D12_RESOURCE_FLAG_NONE
+		.Flags            = flags
 	};
 
 	auto hr = m_device->CreateCommittedResource(
@@ -521,6 +522,15 @@ bool D3D12App::createBuffer(
 	RETURN_FALSE_IF_FAILED(hr);
 
 	return true;
+}
+
+bool D3D12App::createBuffer(
+    const D3D12_HEAP_TYPE       heap_type,
+    const UINT64                size,
+    const D3D12_RESOURCE_STATES state,
+    ID3D12Resource**            resource)
+{
+	return createBuffer(heap_type, size, D3D12_RESOURCE_FLAG_NONE, state, resource);
 }
 
 bool D3D12App::createTexture2D(
@@ -564,7 +574,7 @@ bool D3D12App::createTexture2D(
 		.DepthOrArraySize = array_size,
 		.MipLevels        = mip_levels,
 		.Format           = format,
-		.SampleDesc       = {.Count = 1, .Quality = 0},
+		.SampleDesc       = { .Count = 1, .Quality = 0 },
 		.Layout           = D3D12_TEXTURE_LAYOUT_UNKNOWN,
 		.Flags            = flags
 	};

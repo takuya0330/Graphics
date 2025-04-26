@@ -1,0 +1,567 @@
+﻿#include "D3D12RayTracingTriangleApp.h"
+
+#include "Win32/Debug.h"
+
+#include <DirectXMath.h>
+using namespace DirectX;
+
+namespace {
+
+struct Vertex
+{
+	XMFLOAT3 position;
+};
+
+} // namespace
+
+D3D12RayTracingTriangleApp::D3D12RayTracingTriangleApp(LPCWSTR title, UINT width, UINT height)
+    : D3D12App(title, width, height)
+    , m_device5()
+    , m_gfx_cmd_list4()
+    , m_vertex_buffer()
+    , m_blas()
+    , m_tlas()
+    , m_global_root_signature()
+    , m_state_object()
+    , m_dxr_output()
+    , m_resource_heap()
+    , m_resource_alloc_size(0)
+    , m_shader_table()
+    , m_dispatch_desc()
+{
+}
+
+bool D3D12RayTracingTriangleApp::OnInitialize()
+{
+	ASSERT_RETURN(D3D12App::OnInitialize(), false);
+
+	auto hr = m_device.As(&m_device5);
+	RETURN_FALSE_IF_FAILED(hr);
+
+	// DXR のサポートチェック
+	D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
+	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options5, sizeof(options5));
+	RETURN_FALSE_IF_FAILED(hr);
+	if (options5.RaytracingTier == D3D12_RAYTRACING_TIER_NOT_SUPPORTED)
+	{
+		Debug::Log("DirectX Raytracing not supported.\n");
+		return false;
+	}
+
+	hr = m_device->CreateCommandList(
+	    0,
+	    D3D12_COMMAND_LIST_TYPE_DIRECT,
+	    m_gfx_cmd_allocators.at(0).Get(),
+	    nullptr,
+	    IID_PPV_ARGS(m_gfx_cmd_list4.GetAddressOf()));
+	RETURN_FALSE_IF_FAILED(hr);
+	hr = m_gfx_cmd_list4->Close();
+	RETURN_FALSE_IF_FAILED(hr);
+
+	// BLAS 作成
+	{
+		hr = m_gfx_cmd_allocators.at(m_back_buffer_index)->Reset();
+		RETURN_FALSE_IF_FAILED(hr);
+		hr = m_gfx_cmd_list4->Reset(m_gfx_cmd_allocators.at(0).Get(), nullptr);
+		RETURN_FALSE_IF_FAILED(hr);
+
+		ComPtr<ID3D12Fence> fence;
+		hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.ReleaseAndGetAddressOf()));
+		RETURN_FALSE_IF_FAILED(hr);
+
+		// 頂点バッファ作成
+		const Vertex vertices[] = {
+			XMFLOAT3(+0.0f, +0.5f, +0),
+			XMFLOAT3(+0.5f, -0.5f, +0),
+			XMFLOAT3(-0.5f, -0.5f, +0),
+		};
+		if (!createBuffer(
+		        D3D12_HEAP_TYPE_UPLOAD,
+		        sizeof(vertices),
+		        D3D12_RESOURCE_STATE_GENERIC_READ,
+		        m_vertex_buffer.GetAddressOf()))
+			return false;
+		{
+			void* ptr = nullptr;
+			hr        = m_vertex_buffer->Map(0, nullptr, &ptr);
+			RETURN_FALSE_IF_FAILED(hr);
+			std::memcpy(ptr, vertices, sizeof(vertices));
+			m_vertex_buffer->Unmap(0, nullptr);
+		}
+
+		D3D12_RAYTRACING_GEOMETRY_DESC geometry_desc = {};
+		{
+			geometry_desc.Type                                 = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+			geometry_desc.Flags                                = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+			geometry_desc.Triangles.VertexFormat               = DXGI_FORMAT_R32G32B32_FLOAT;
+			geometry_desc.Triangles.VertexCount                = _countof(vertices);
+			geometry_desc.Triangles.VertexBuffer.StartAddress  = m_vertex_buffer->GetGPUVirtualAddress();
+			geometry_desc.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
+		}
+
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC build_desc = {};
+		auto&                                              inputs     = build_desc.Inputs;
+		{
+			inputs.Type           = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+			inputs.Flags          = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
+			inputs.NumDescs       = 1;
+			inputs.DescsLayout    = D3D12_ELEMENTS_LAYOUT_ARRAY;
+			inputs.pGeometryDescs = &geometry_desc;
+		}
+
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuild_info = {};
+		m_device5->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &prebuild_info);
+		if (prebuild_info.ResultDataMaxSizeInBytes == 0)
+			return false;
+
+		ComPtr<ID3D12Resource> scratch;
+		if (!createBuffer(
+		        D3D12_HEAP_TYPE_DEFAULT,
+		        prebuild_info.ScratchDataSizeInBytes,
+		        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
+		        D3D12_RESOURCE_STATE_COMMON, // D3D12 WARNING: ID3D12Device::CreateCommittedResource: Ignoring InitialState D3D12_RESOURCE_STATE_UNORDERED_ACCESS. Buffers are effectively created in state D3D12_RESOURCE_STATE_COMMON. [ STATE_CREATION WARNING #1328: CREATERESOURCE_STATE_IGNORED]
+		        scratch.GetAddressOf()))
+			return false;
+
+		if (!createBuffer(
+		        D3D12_HEAP_TYPE_DEFAULT,
+		        prebuild_info.ResultDataMaxSizeInBytes,
+		        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
+		        D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+		        m_blas.GetAddressOf()))
+			return false;
+
+		build_desc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
+		build_desc.DestAccelerationStructureData    = m_blas->GetGPUVirtualAddress();
+
+		m_gfx_cmd_list4->BuildRaytracingAccelerationStructure(&build_desc, 0, nullptr);
+
+		D3D12_RESOURCE_BARRIER barrier = {};
+		{
+			barrier.Type          = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+			barrier.Flags         = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+			barrier.UAV.pResource = m_blas.Get();
+		}
+		m_gfx_cmd_list4->ResourceBarrier(1, &barrier);
+		m_gfx_cmd_list4->Close();
+
+		ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list4.Get() };
+		m_gfx_cmd_queue->ExecuteCommandLists(1, cmd_lists);
+
+		m_gfx_cmd_queue->Signal(fence.Get(), 1);
+		auto event = ::CreateEvent(nullptr, false, false, nullptr);
+		fence->SetEventOnCompletion(1, event);
+#pragma warning(push)
+#pragma warning(disable : 6387)
+		::WaitForSingleObject(event, INFINITE);
+		::CloseHandle(event);
+#pragma warning(pop)
+	}
+
+	// TLAS 作成
+	{
+		hr = m_gfx_cmd_allocators.at(m_back_buffer_index)->Reset();
+		RETURN_FALSE_IF_FAILED(hr);
+		hr = m_gfx_cmd_list4->Reset(m_gfx_cmd_allocators.at(0).Get(), nullptr);
+		RETURN_FALSE_IF_FAILED(hr);
+
+		ComPtr<ID3D12Fence> fence;
+		hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.ReleaseAndGetAddressOf()));
+		RETURN_FALSE_IF_FAILED(hr);
+
+		D3D12_RAYTRACING_INSTANCE_DESC instance_desc = {};
+		{
+			XMStoreFloat3x4(reinterpret_cast<XMFLOAT3X4*>(&instance_desc.Transform), XMMatrixIdentity());
+			instance_desc.InstanceID                          = 0;
+			instance_desc.InstanceMask                        = 0xFF;
+			instance_desc.InstanceContributionToHitGroupIndex = 0;
+			instance_desc.Flags                               = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
+			instance_desc.AccelerationStructure               = m_blas->GetGPUVirtualAddress();
+		}
+
+		ComPtr<ID3D12Resource> instance;
+		if (!createBuffer(
+		        D3D12_HEAP_TYPE_UPLOAD,
+		        sizeof(instance_desc),
+		        D3D12_RESOURCE_STATE_GENERIC_READ,
+		        instance.GetAddressOf()))
+			return false;
+		{
+			void* ptr = nullptr;
+			hr        = instance->Map(0, nullptr, &ptr);
+			RETURN_FALSE_IF_FAILED(hr);
+			std::memcpy(ptr, &instance_desc, sizeof(instance_desc));
+			instance->Unmap(0, nullptr);
+		}
+
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC build_desc = {};
+		auto&                                              inputs     = build_desc.Inputs;
+		{
+			inputs.Type          = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+			inputs.Flags         = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
+			inputs.NumDescs      = 1;
+			inputs.DescsLayout   = D3D12_ELEMENTS_LAYOUT_ARRAY;
+			inputs.InstanceDescs = instance->GetGPUVirtualAddress();
+		}
+
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuild_info = {};
+		m_device5->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &prebuild_info);
+		if (prebuild_info.ResultDataMaxSizeInBytes == 0)
+			return false;
+
+		ComPtr<ID3D12Resource> scratch;
+		if (!createBuffer(
+		        D3D12_HEAP_TYPE_DEFAULT,
+		        prebuild_info.ScratchDataSizeInBytes,
+		        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
+		        D3D12_RESOURCE_STATE_COMMON, // D3D12 WARNING: ID3D12Device::CreateCommittedResource: Ignoring InitialState D3D12_RESOURCE_STATE_UNORDERED_ACCESS. Buffers are effectively created in state D3D12_RESOURCE_STATE_COMMON. [ STATE_CREATION WARNING #1328: CREATERESOURCE_STATE_IGNORED]
+		        scratch.GetAddressOf()))
+			return false;
+
+		if (!createBuffer(
+		        D3D12_HEAP_TYPE_DEFAULT,
+		        prebuild_info.ResultDataMaxSizeInBytes,
+		        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
+		        D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+		        m_tlas.GetAddressOf()))
+			return false;
+
+		build_desc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
+		build_desc.DestAccelerationStructureData    = m_tlas->GetGPUVirtualAddress();
+
+		m_gfx_cmd_list4->BuildRaytracingAccelerationStructure(&build_desc, 0, nullptr);
+
+		D3D12_RESOURCE_BARRIER barrier = {};
+		{
+			barrier.Type          = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+			barrier.Flags         = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+			barrier.UAV.pResource = m_tlas.Get();
+		}
+		m_gfx_cmd_list4->ResourceBarrier(1, &barrier);
+		m_gfx_cmd_list4->Close();
+
+		ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list4.Get() };
+		m_gfx_cmd_queue->ExecuteCommandLists(1, cmd_lists);
+
+		m_gfx_cmd_queue->Signal(fence.Get(), 1);
+		auto event = ::CreateEvent(nullptr, false, false, nullptr);
+		fence->SetEventOnCompletion(1, event);
+#pragma warning(push)
+#pragma warning(disable : 6387)
+		::WaitForSingleObject(event, INFINITE);
+		::CloseHandle(event);
+#pragma warning(pop)
+	}
+
+	// グローバルルートシグネチャ作成
+	{
+		D3D12_DESCRIPTOR_RANGE range_tlas = {};
+		{
+			range_tlas.RangeType          = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			range_tlas.NumDescriptors     = 1;
+			range_tlas.BaseShaderRegister = 0;
+		}
+		D3D12_DESCRIPTOR_RANGE range_output = {};
+		{
+			range_output.RangeType          = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+			range_output.NumDescriptors     = 1;
+			range_output.BaseShaderRegister = 0;
+		}
+		D3D12_ROOT_PARAMETER root_params[2] = {};
+		{
+			root_params[0].ParameterType                       = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			root_params[0].DescriptorTable.NumDescriptorRanges = 1;
+			root_params[0].DescriptorTable.pDescriptorRanges   = &range_tlas;
+			root_params[1].ParameterType                       = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			root_params[1].DescriptorTable.NumDescriptorRanges = 1;
+			root_params[1].DescriptorTable.pDescriptorRanges   = &range_output;
+		}
+
+		D3D12_ROOT_SIGNATURE_DESC root_sig_desc = {};
+		{
+			root_sig_desc.NumParameters = _countof(root_params);
+			root_sig_desc.pParameters   = root_params;
+		}
+		ComPtr<ID3DBlob> blob, error;
+		hr = D3D12SerializeRootSignature(
+		    &root_sig_desc,
+		    D3D_ROOT_SIGNATURE_VERSION_1_0,
+		    blob.ReleaseAndGetAddressOf(),
+		    error.ReleaseAndGetAddressOf());
+		RETURN_FALSE_IF_FAILED(hr);
+
+		hr = m_device->CreateRootSignature(
+		    0,
+		    blob->GetBufferPointer(),
+		    blob->GetBufferSize(),
+		    IID_PPV_ARGS(m_global_root_signature.GetAddressOf()));
+		RETURN_FALSE_IF_FAILED(hr);
+	}
+
+	// ステートオブジェクト作成
+	{
+		ComPtr<IDxcBlob> blob;
+		if (!loadShader(L"DXRTriangle.hlsl", L"", L"lib_6_4", blob.GetAddressOf()))
+			return false;
+
+		std::vector<D3D12_STATE_SUBOBJECT> subobjects;
+
+		D3D12_EXPORT_DESC exports[] = {
+			{ L"MainRGS", nullptr, D3D12_EXPORT_FLAG_NONE },
+			{ L"MainMS", nullptr, D3D12_EXPORT_FLAG_NONE },
+			{ L"MainCHS", nullptr, D3D12_EXPORT_FLAG_NONE },
+		};
+		D3D12_DXIL_LIBRARY_DESC library = {};
+		{
+			library.DXILLibrary.pShaderBytecode = blob->GetBufferPointer();
+			library.DXILLibrary.BytecodeLength  = blob->GetBufferSize();
+			library.NumExports                  = _countof(exports);
+			library.pExports                    = exports;
+		}
+		subobjects.emplace_back(D3D12_STATE_SUBOBJECT { D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY, &library });
+
+		D3D12_HIT_GROUP_DESC hit_group = {};
+		{
+			hit_group.Type                   = D3D12_HIT_GROUP_TYPE_TRIANGLES;
+			hit_group.ClosestHitShaderImport = L"MainCHS";
+			hit_group.HitGroupExport         = L"DefaultHitGroup";
+		}
+		subobjects.emplace_back(D3D12_STATE_SUBOBJECT { D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP, &hit_group });
+
+		D3D12_GLOBAL_ROOT_SIGNATURE global = {};
+		{
+			global.pGlobalRootSignature = m_global_root_signature.Get();
+		}
+		subobjects.emplace_back(D3D12_STATE_SUBOBJECT { D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE, &global });
+
+		D3D12_RAYTRACING_SHADER_CONFIG shader = {};
+		{
+			shader.MaxPayloadSizeInBytes   = sizeof(XMFLOAT3);
+			shader.MaxAttributeSizeInBytes = sizeof(XMFLOAT2);
+		}
+		subobjects.emplace_back(D3D12_STATE_SUBOBJECT { D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG, &shader });
+
+		D3D12_RAYTRACING_PIPELINE_CONFIG pipeline = {};
+		{
+			pipeline.MaxTraceRecursionDepth = 1;
+		}
+		subobjects.emplace_back(D3D12_STATE_SUBOBJECT { D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_PIPELINE_CONFIG, &pipeline });
+
+		D3D12_STATE_OBJECT_DESC state_obj_desc = {};
+		{
+			state_obj_desc.Type          = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE;
+			state_obj_desc.NumSubobjects = static_cast<UINT>(subobjects.size());
+			state_obj_desc.pSubobjects   = subobjects.data();
+		}
+		hr = m_device5->CreateStateObject(&state_obj_desc, IID_PPV_ARGS(m_state_object.GetAddressOf()));
+		RETURN_FALSE_IF_FAILED(hr);
+	}
+
+	// 出力先バッファ作成
+	if (!createTexture2D(
+	        D3D12_HEAP_TYPE_DEFAULT,
+	        m_width,
+	        m_height,
+	        1,
+	        1,
+	        DXGI_FORMAT_R8G8B8A8_UNORM,
+	        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
+	        D3D12_RESOURCE_STATE_COPY_SOURCE,
+	        nullptr,
+	        m_dxr_output.GetAddressOf()))
+		return false;
+
+	// ディスクリプタヒープ作成
+	if (!createDescriptorHeap(
+	        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+	        2,
+	        D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE,
+	        m_resource_heap.GetAddressOf()))
+		return false;
+
+	m_resource_alloc_size = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	auto cpu_handle       = m_resource_heap->GetCPUDescriptorHandleForHeapStart();
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+	{
+		srv_desc.ViewDimension                            = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+		srv_desc.Shader4ComponentMapping                  = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srv_desc.RaytracingAccelerationStructure.Location = m_tlas->GetGPUVirtualAddress();
+	}
+	m_device->CreateShaderResourceView(nullptr, &srv_desc, cpu_handle);
+
+	cpu_handle.ptr += m_resource_alloc_size;
+	D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
+	{
+		uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	}
+	m_device->CreateUnorderedAccessView(m_dxr_output.Get(), nullptr, &uav_desc, cpu_handle);
+
+	// シェーダーテーブル作成
+	{
+		const auto record_size    = calcAlignment(D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES, D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+		const auto ray_gen_size   = 1 * record_size;
+		const auto miss_size      = 1 * record_size;
+		const auto hit_group_size = 1 * record_size;
+
+		const auto ray_gen_aligned_size   = calcAlignment(ray_gen_size, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+		const auto miss_aligned_size      = calcAlignment(miss_size, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+		const auto hit_group_aligned_size = calcAlignment(hit_group_size, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+
+		if (!createBuffer(
+		        D3D12_HEAP_TYPE_UPLOAD,
+		        ray_gen_aligned_size + miss_aligned_size + hit_group_aligned_size,
+		        D3D12_RESOURCE_STATE_GENERIC_READ,
+		        m_shader_table.GetAddressOf()))
+			return false;
+
+		ComPtr<ID3D12StateObjectProperties> props;
+		m_state_object.As(&props);
+
+		uint8_t* ptr = nullptr;
+		hr           = m_shader_table->Map(0, nullptr, reinterpret_cast<void**>(&ptr));
+		RETURN_FALSE_IF_FAILED(hr);
+
+		auto ray_gen_id = props->GetShaderIdentifier(L"MainRGS");
+		std::memcpy(ptr, ray_gen_id, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		ptr += ray_gen_aligned_size;
+
+		auto miss_id = props->GetShaderIdentifier(L"MainMS");
+		std::memcpy(ptr, miss_id, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		ptr += miss_aligned_size;
+
+		auto hit_group_id = props->GetShaderIdentifier(L"DefaultHitGroup");
+		std::memcpy(ptr, hit_group_id, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
+		ptr += hit_group_aligned_size;
+
+		m_shader_table->Unmap(0, nullptr);
+
+		auto  address        = m_shader_table->GetGPUVirtualAddress();
+		auto& ray_gen_record = m_dispatch_desc.RayGenerationShaderRecord;
+		{
+			ray_gen_record.StartAddress = address;
+			ray_gen_record.SizeInBytes  = ray_gen_size;
+			address += ray_gen_aligned_size;
+		}
+		auto& miss_record = m_dispatch_desc.MissShaderTable;
+		{
+			miss_record.StartAddress  = address;
+			miss_record.SizeInBytes   = miss_size;
+			miss_record.StrideInBytes = record_size;
+			address += miss_aligned_size;
+		}
+		auto& hit_group_record = m_dispatch_desc.HitGroupTable;
+		{
+			hit_group_record.StartAddress  = address;
+			hit_group_record.SizeInBytes   = hit_group_size;
+			hit_group_record.StrideInBytes = record_size;
+			address += hit_group_aligned_size;
+		}
+		m_dispatch_desc.Width  = m_width;
+		m_dispatch_desc.Height = m_height;
+		m_dispatch_desc.Depth  = 1;
+	}
+
+	return true;
+}
+
+void D3D12RayTracingTriangleApp::OnFinalize()
+{
+	D3D12App::OnFinalize();
+}
+
+void D3D12RayTracingTriangleApp::OnUpdate()
+{
+}
+
+void D3D12RayTracingTriangleApp::OnRender()
+{
+	auto hr = m_gfx_cmd_allocators.at(m_back_buffer_index)->Reset();
+	ASSERT_IF_FAILED(hr);
+
+	hr = m_gfx_cmd_list4->Reset(m_gfx_cmd_allocators.at(m_back_buffer_index).Get(), nullptr);
+	ASSERT_IF_FAILED(hr);
+
+	D3D12_RESOURCE_BARRIER backbuffer_barrier = {};
+	{
+		backbuffer_barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		backbuffer_barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		backbuffer_barrier.Transition.pResource   = m_back_buffers.at(m_back_buffer_index).Get();
+		backbuffer_barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		backbuffer_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+		backbuffer_barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	}
+	m_gfx_cmd_list4->ResourceBarrier(1, &backbuffer_barrier);
+
+	D3D12_VIEWPORT viewport = {
+		.TopLeftX = 0,
+		.TopLeftY = 0,
+		.Width    = static_cast<float>(m_width),
+		.Height   = static_cast<float>(m_height),
+		.MinDepth = 0.0f,
+		.MaxDepth = 1.0f
+	};
+	m_gfx_cmd_list4->RSSetViewports(1, &viewport);
+	D3D12_RECT scissor = {
+		.left   = 0,
+		.top    = 0,
+		.right  = static_cast<LONG>(m_width),
+		.bottom = static_cast<LONG>(m_height)
+	};
+	m_gfx_cmd_list4->RSSetScissorRects(1, &scissor);
+
+	m_gfx_cmd_list4->SetComputeRootSignature(m_global_root_signature.Get());
+	m_gfx_cmd_list4->SetDescriptorHeaps(1, m_resource_heap.GetAddressOf());
+	auto gpu_handle = m_resource_heap->GetGPUDescriptorHandleForHeapStart();
+	m_gfx_cmd_list4->SetComputeRootDescriptorTable(0, gpu_handle);
+	gpu_handle.ptr += m_resource_alloc_size;
+	m_gfx_cmd_list4->SetComputeRootDescriptorTable(1, gpu_handle);
+
+	D3D12_RESOURCE_BARRIER output_barrier = {};
+	{
+		output_barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		output_barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		output_barrier.Transition.pResource   = m_dxr_output.Get();
+		output_barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		output_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+		output_barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	}
+	m_gfx_cmd_list4->ResourceBarrier(1, &output_barrier);
+
+	m_gfx_cmd_list4->SetPipelineState1(m_state_object.Get());
+	m_gfx_cmd_list4->DispatchRays(&m_dispatch_desc);
+
+	{
+		output_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+		output_barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_COPY_SOURCE;
+
+		backbuffer_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		backbuffer_barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_COPY_DEST;
+	}
+	D3D12_RESOURCE_BARRIER barriers[] = {
+		output_barrier,
+		backbuffer_barrier
+	};
+	m_gfx_cmd_list4->ResourceBarrier(2, barriers);
+	m_gfx_cmd_list4->CopyResource(m_back_buffers.at(m_back_buffer_index).Get(), m_dxr_output.Get());
+
+	D3D12_RESOURCE_BARRIER present_barrier = {};
+	{
+		present_barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		present_barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		present_barrier.Transition.pResource   = m_back_buffers.at(m_back_buffer_index).Get();
+		present_barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		present_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+		present_barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_PRESENT;
+	}
+	m_gfx_cmd_list4->ResourceBarrier(1, &present_barrier);
+
+	hr = m_gfx_cmd_list4->Close();
+	ASSERT_IF_FAILED(hr);
+
+	ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list4.Get() };
+	m_gfx_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), cmd_lists);
+
+	present(1);
+	waitPreviousFrame();
+}

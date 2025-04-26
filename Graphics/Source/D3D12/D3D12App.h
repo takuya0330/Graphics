@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <vector>
-
 #include "Win32/Win32App.h"
+
+#include <vector>
 
 #define _D3D12_SET_NAME(obj, ...)    \
 	{                                \
@@ -79,6 +79,13 @@ protected:
 	    const UINT                        num_descriptors,
 	    const D3D12_DESCRIPTOR_HEAP_FLAGS flags,
 	    ID3D12DescriptorHeap**            descriptor_heap);
+
+	bool createBuffer(
+	    const D3D12_HEAP_TYPE       heap_type,
+	    const UINT64                size,
+	    const D3D12_RESOURCE_FLAGS  flags,
+	    const D3D12_RESOURCE_STATES state,
+	    ID3D12Resource**            resource);
 
 	bool createBuffer(
 	    const D3D12_HEAP_TYPE       heap_type,
