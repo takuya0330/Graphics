@@ -157,10 +157,10 @@ bool D3D12App::searchAdapter()
 
 bool D3D12App::createDevice()
 {
-	auto hr = Utilities::CreateDevice(
+	auto hr = ::D3D12CreateDevice(
         m_adapters.at(m_adapter_index).Get(),
-        D3D_FEATURE_LEVEL_11_0,
-        m_device.GetAddressOf());
+	    D3D_FEATURE_LEVEL_11_0,
+	    IID_PPV_ARGS(m_device.GetAddressOf()));
 	RETURN_FALSE_IF_FAILED(hr);
 
 	_D3D12_SET_NAME(m_device, L"Device");

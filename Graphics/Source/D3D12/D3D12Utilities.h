@@ -5,9 +5,6 @@
 
 namespace Utilities {
 
-template<class DeviceX>
-concept DeviceType = std::is_base_of_v<ID3D12Device, DeviceX>;
-
 template<class GraphicsCommandListX>
 concept GraphicsCommandListType = std::is_base_of_v<ID3D12GraphicsCommandList, GraphicsCommandListX>;
 
@@ -32,17 +29,6 @@ inline D3D12_RESOURCE_BARRIER CreateResourceBarrierTrantision(
 		barrier.Transition.StateAfter  = after_state;
 	}
 	return barrier;
-}
-
-inline HRESULT CreateDevice(
-    IDXGIAdapter*     dxgi_adapter,
-    D3D_FEATURE_LEVEL d3d_feature_level,
-    DeviceType auto** d3d12_device)
-{
-	auto hr = ::D3D12CreateDevice(dxgi_adapter, d3d_feature_level, IID_PPV_ARGS(d3d12_device));
-	RETURN_HRESULT_IF_FAILED(hr);
-
-	return hr;
 }
 
 inline HRESULT CreateCommandList(
