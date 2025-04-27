@@ -18,10 +18,26 @@ protected:
 
 	virtual void OnRender() override;
 
-private:
+protected:
+	struct AccelerationStructure
+	{
+		ComPtr<ID3D12Resource> scratch;
+		ComPtr<ID3D12Resource> result;
+	};
+
+protected:
+	bool isSupportedRayTracing();
+
+	bool createAccelerationStructure(
+	    ID3D12Device5*                                      dxr_device,
+	    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& acceleration_structure_desc,
+	    AccelerationStructure&                              acceleration_structure);
+
+protected:
 	ComPtr<ID3D12Device5>              m_device5;
 	ComPtr<ID3D12GraphicsCommandList4> m_gfx_cmd_list4;
 
+private:
 	ComPtr<ID3D12Resource>       m_vertex_buffer;
 	ComPtr<ID3D12Resource>       m_blas;
 	ComPtr<ID3D12Resource>       m_tlas;

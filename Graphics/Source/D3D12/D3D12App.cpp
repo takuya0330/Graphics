@@ -315,7 +315,7 @@ void D3D12App::reset()
         m_gfx_cmd_list.Get());
 	ASSERT_IF_FAILED(hr);
 
-    Utilities::ResourceBarrierTransition(
+    Utilities::SetResourceBarrierTransition(
 	    m_gfx_cmd_list.Get(),
 	    m_back_buffers.at(m_back_buffer_index).Get(),
 	    D3D12_RESOURCE_STATE_PRESENT,
@@ -348,7 +348,7 @@ void D3D12App::setBackBuffer()
 
 void D3D12App::executeCommandList()
 {
-	Utilities::ResourceBarrierTransition(
+	Utilities::SetResourceBarrierTransition(
 	    m_gfx_cmd_list.Get(),
 	    m_back_buffers.at(m_back_buffer_index).Get(),
 	    D3D12_RESOURCE_STATE_RENDER_TARGET,

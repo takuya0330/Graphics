@@ -14,7 +14,7 @@ concept FenceType = std::is_base_of_v<ID3D12Fence, FenceX>;
 template<class ResourceX>
 concept ResourceType = std::is_base_of_v<ID3D12Resource, ResourceX>;
 
-inline D3D12_RESOURCE_BARRIER CreateResourceBarrierTrantision(
+inline D3D12_RESOURCE_BARRIER ResourceBarrierTrantision(
     ID3D12Resource*       d3d12_resource,
     D3D12_RESOURCE_STATES before_state,
     D3D12_RESOURCE_STATES after_state)
@@ -199,17 +199,17 @@ inline void SetScissorRect(
 	d3d12_command_list->RSSetScissorRects(1, &scissor);
 }
 
-inline void ResourceBarrierTransition(
+inline void SetResourceBarrierTransition(
     ID3D12GraphicsCommandList* d3d12_command_list,
     ID3D12Resource*            d3d12_resource,
     D3D12_RESOURCE_STATES      before_state,
     D3D12_RESOURCE_STATES      after_state)
 {
-	auto barrier = CreateResourceBarrierTrantision(d3d12_resource, before_state, after_state);
+	auto barrier = ResourceBarrierTrantision(d3d12_resource, before_state, after_state);
 	d3d12_command_list->ResourceBarrier(1, &barrier);
 }
 
-inline void ResourceBarrierUAV(
+inline void SetResourceBarrierUAV(
     ID3D12GraphicsCommandList* d3d12_command_list,
     ID3D12Resource*            d3d12_resource)
 {

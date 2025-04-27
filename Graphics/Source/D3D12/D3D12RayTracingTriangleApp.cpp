@@ -35,18 +35,12 @@ bool D3D12RayTracingTriangleApp::OnInitialize()
 {
 	ASSERT_RETURN(D3D12App::OnInitialize(), false);
 
+	// DXR のサポートチェック
+	if (!isSupportedRayTracing())
+		return false;
+
 	auto hr = m_device.As(&m_device5);
 	RETURN_FALSE_IF_FAILED(hr);
-
-	// DXR のサポートチェック
-	D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
-	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options5, sizeof(options5));
-	RETURN_FALSE_IF_FAILED(hr);
-	if (options5.RaytracingTier == D3D12_RAYTRACING_TIER_NOT_SUPPORTED)
-	{
-		Debug::Log("DirectX Raytracing not supported.\n");
-		return false;
-	}
 
 	hr = Utilities::CreateCommandList(
 	    m_device5.Get(),
@@ -102,34 +96,17 @@ bool D3D12RayTracingTriangleApp::OnInitialize()
 			inputs.pGeometryDescs = &geometry_desc;
 		}
 
-		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuild_info = {};
-		m_device5->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &prebuild_info);
-		if (prebuild_info.ResultDataMaxSizeInBytes == 0)
+		AccelerationStructure blas;
+		if (!createAccelerationStructure(
+		        m_device5.Get(),
+		        build_desc,
+		        blas))
 			return false;
-
-		ComPtr<ID3D12Resource> scratch;
-		if (!createBuffer(
-		        D3D12_HEAP_TYPE_DEFAULT,
-		        prebuild_info.ScratchDataSizeInBytes,
-		        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
-		        D3D12_RESOURCE_STATE_COMMON, // D3D12 WARNING: ID3D12Device::CreateCommittedResource: Ignoring InitialState D3D12_RESOURCE_STATE_UNORDERED_ACCESS. Buffers are effectively created in state D3D12_RESOURCE_STATE_COMMON. [ STATE_CREATION WARNING #1328: CREATERESOURCE_STATE_IGNORED]
-		        scratch.GetAddressOf()))
-			return false;
-
-		if (!createBuffer(
-		        D3D12_HEAP_TYPE_DEFAULT,
-		        prebuild_info.ResultDataMaxSizeInBytes,
-		        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
-		        D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
-		        m_blas.GetAddressOf()))
-			return false;
-
-		build_desc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
-		build_desc.DestAccelerationStructureData    = m_blas->GetGPUVirtualAddress();
+		m_blas = blas.result;
 
 		m_gfx_cmd_list4->BuildRaytracingAccelerationStructure(&build_desc, 0, nullptr);
 
-		Utilities::ResourceBarrierUAV(m_gfx_cmd_list4.Get(), m_blas.Get());
+		Utilities::SetResourceBarrierUAV(m_gfx_cmd_list4.Get(), m_blas.Get());
 		Utilities::ExecuteCommandList(m_gfx_cmd_queue.Get(), m_gfx_cmd_list4.Get());
 
 		waitForGPU(m_gfx_cmd_queue.Get());
@@ -177,34 +154,17 @@ bool D3D12RayTracingTriangleApp::OnInitialize()
 			inputs.InstanceDescs = instance->GetGPUVirtualAddress();
 		}
 
-		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuild_info = {};
-		m_device5->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &prebuild_info);
-		if (prebuild_info.ResultDataMaxSizeInBytes == 0)
+		AccelerationStructure tlas;
+		if (!createAccelerationStructure(
+		        m_device5.Get(),
+		        build_desc,
+		        tlas))
 			return false;
-
-		ComPtr<ID3D12Resource> scratch;
-		if (!createBuffer(
-		        D3D12_HEAP_TYPE_DEFAULT,
-		        prebuild_info.ScratchDataSizeInBytes,
-		        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
-		        D3D12_RESOURCE_STATE_COMMON, // D3D12 WARNING: ID3D12Device::CreateCommittedResource: Ignoring InitialState D3D12_RESOURCE_STATE_UNORDERED_ACCESS. Buffers are effectively created in state D3D12_RESOURCE_STATE_COMMON. [ STATE_CREATION WARNING #1328: CREATERESOURCE_STATE_IGNORED]
-		        scratch.GetAddressOf()))
-			return false;
-
-		if (!createBuffer(
-		        D3D12_HEAP_TYPE_DEFAULT,
-		        prebuild_info.ResultDataMaxSizeInBytes,
-		        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
-		        D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
-		        m_tlas.GetAddressOf()))
-			return false;
-
-		build_desc.ScratchAccelerationStructureData = scratch->GetGPUVirtualAddress();
-		build_desc.DestAccelerationStructureData    = m_tlas->GetGPUVirtualAddress();
+		m_tlas = tlas.result;
 
 		m_gfx_cmd_list4->BuildRaytracingAccelerationStructure(&build_desc, 0, nullptr);
 
-		Utilities::ResourceBarrierUAV(m_gfx_cmd_list4.Get(), m_tlas.Get());
+		Utilities::SetResourceBarrierUAV(m_gfx_cmd_list4.Get(), m_tlas.Get());
 		Utilities::ExecuteCommandList(m_gfx_cmd_queue.Get(), m_gfx_cmd_list4.Get());
 
 		waitForGPU(m_gfx_cmd_queue.Get());
@@ -454,7 +414,7 @@ void D3D12RayTracingTriangleApp::OnRender()
 	gpu_handle.ptr += m_resource_alloc_size;
 	m_gfx_cmd_list4->SetComputeRootDescriptorTable(1, gpu_handle);
 
-	Utilities::ResourceBarrierTransition(
+	Utilities::SetResourceBarrierTransition(
 	    m_gfx_cmd_list4.Get(),
 	    m_dxr_output.Get(),
 	    D3D12_RESOURCE_STATE_COPY_SOURCE,
@@ -464,13 +424,13 @@ void D3D12RayTracingTriangleApp::OnRender()
 	m_gfx_cmd_list4->DispatchRays(&m_dispatch_desc);
 
 	D3D12_RESOURCE_BARRIER barriers[] = {
-		Utilities::CreateResourceBarrierTrantision(m_dxr_output.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),
-		Utilities::CreateResourceBarrierTrantision(m_back_buffers.at(m_back_buffer_index).Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST),
+		Utilities::ResourceBarrierTrantision(m_dxr_output.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),
+		Utilities::ResourceBarrierTrantision(m_back_buffers.at(m_back_buffer_index).Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST),
 	};
 	m_gfx_cmd_list4->ResourceBarrier(2, barriers);
 	m_gfx_cmd_list4->CopyResource(m_back_buffers.at(m_back_buffer_index).Get(), m_dxr_output.Get());
 
-	Utilities::ResourceBarrierTransition(
+	Utilities::SetResourceBarrierTransition(
 	    m_gfx_cmd_list4.Get(),
 	    m_back_buffers.at(m_back_buffer_index).Get(),
 	    D3D12_RESOURCE_STATE_COPY_DEST,
@@ -479,4 +439,60 @@ void D3D12RayTracingTriangleApp::OnRender()
 
 	present(1);
 	waitPreviousFrame();
+}
+
+bool D3D12RayTracingTriangleApp::isSupportedRayTracing()
+{
+	HRESULT                           hr       = S_OK;
+	D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5 = {};
+
+	hr = m_device->CheckFeatureSupport(
+	    D3D12_FEATURE_D3D12_OPTIONS5,
+	    &options5,
+	    sizeof(options5));
+	RETURN_FALSE_IF_FAILED(hr);
+
+	if (options5.RaytracingTier == D3D12_RAYTRACING_TIER_NOT_SUPPORTED)
+	{
+		Debug::Log("DirectX Raytracing not supported.\n");
+		return false;
+	}
+
+	return true;
+}
+
+bool D3D12RayTracingTriangleApp::createAccelerationStructure(
+    ID3D12Device5*                                      dxr_device,
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& acceleration_structure_desc,
+    AccelerationStructure&                              acceleration_structure)
+{
+	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuild_info = {};
+	dxr_device->GetRaytracingAccelerationStructurePrebuildInfo(
+	    &acceleration_structure_desc.Inputs,
+	    &prebuild_info);
+	if (prebuild_info.ResultDataMaxSizeInBytes == 0)
+		return false;
+
+	auto hr = Utilities::CreateBuffer(
+	    dxr_device,
+	    D3D12_HEAP_TYPE_DEFAULT,
+	    prebuild_info.ScratchDataSizeInBytes,
+	    D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
+	    D3D12_RESOURCE_STATE_COMMON, // D3D12 WARNING: ID3D12Device::CreateCommittedResource: Ignoring InitialState D3D12_RESOURCE_STATE_UNORDERED_ACCESS. Buffers are effectively created in state D3D12_RESOURCE_STATE_COMMON. [ STATE_CREATION WARNING #1328: CREATERESOURCE_STATE_IGNORED]
+	    acceleration_structure.scratch.GetAddressOf());
+	RETURN_FALSE_IF_FAILED(hr);
+
+	hr = Utilities::CreateBuffer(
+	    dxr_device,
+	    D3D12_HEAP_TYPE_DEFAULT,
+	    prebuild_info.ResultDataMaxSizeInBytes,
+	    D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
+	    D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+	    acceleration_structure.result.GetAddressOf());
+	RETURN_FALSE_IF_FAILED(hr);
+
+	acceleration_structure_desc.ScratchAccelerationStructureData = acceleration_structure.scratch->GetGPUVirtualAddress();
+	acceleration_structure_desc.DestAccelerationStructureData    = acceleration_structure.result->GetGPUVirtualAddress();
+
+	return true;
 }

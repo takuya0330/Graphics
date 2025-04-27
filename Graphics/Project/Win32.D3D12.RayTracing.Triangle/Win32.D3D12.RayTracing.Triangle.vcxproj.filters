@@ -43,6 +43,9 @@
     <ClInclude Include="..\..\Source\D3D12\D3D12RayTracingTriangleApp.h">
       <Filter>Source\D3D12</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\D3D12\D3D12Utilities.h">
+      <Filter>Source\D3D12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\Win32\Image.cpp">
