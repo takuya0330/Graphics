@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "D3D12Utilities.h"
 #include "Win32/Win32App.h"
 
 #include <vector>

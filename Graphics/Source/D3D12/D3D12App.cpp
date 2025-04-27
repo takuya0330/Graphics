@@ -157,7 +157,10 @@ bool D3D12App::searchAdapter()
 
 bool D3D12App::createDevice()
 {
-	auto hr = ::D3D12CreateDevice(m_adapters.at(m_adapter_index).Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(m_device.GetAddressOf()));
+	auto hr = Utilities::CreateDevice(
+        m_adapters.at(m_adapter_index).Get(),
+        D3D_FEATURE_LEVEL_11_0,
+        m_device.GetAddressOf());
 	RETURN_FALSE_IF_FAILED(hr);
 
 	_D3D12_SET_NAME(m_device, L"Device");
@@ -294,7 +297,7 @@ bool D3D12App::createFence()
 
 	for (auto& fence : m_fences)
 	{
-		hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf()));
+		hr = Utilities::CreateFence(m_device.Get(), fence.GetAddressOf());
 		RETURN_FALSE_IF_FAILED(hr);
 
 		static int index = 0;
@@ -307,46 +310,26 @@ bool D3D12App::createFence()
 
 void D3D12App::reset()
 {
-	auto hr = m_gfx_cmd_allocators.at(m_back_buffer_index)->Reset();
+	auto hr = Utilities::Reset(
+        m_gfx_cmd_allocators.at(m_back_buffer_index).Get(),
+        m_gfx_cmd_list.Get());
 	ASSERT_IF_FAILED(hr);
 
-	hr = m_gfx_cmd_list->Reset(m_gfx_cmd_allocators.at(m_back_buffer_index).Get(), nullptr);
-	ASSERT_IF_FAILED(hr);
-
-	D3D12_RESOURCE_BARRIER barrier = {};
-	{
-		barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource   = m_back_buffers.at(m_back_buffer_index).Get();
-		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-		barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	}
-	m_gfx_cmd_list->ResourceBarrier(1, &barrier);
+    Utilities::ResourceBarrierTransition(
+	    m_gfx_cmd_list.Get(),
+	    m_back_buffers.at(m_back_buffer_index).Get(),
+	    D3D12_RESOURCE_STATE_PRESENT,
+	    D3D12_RESOURCE_STATE_RENDER_TARGET);
 }
 
 void D3D12App::setViewport(float width, float height)
 {
-	D3D12_VIEWPORT viewport = {
-		.TopLeftX = 0,
-		.TopLeftY = 0,
-		.Width    = width,
-		.Height   = height,
-		.MinDepth = 0.0f,
-		.MaxDepth = 1.0f
-	};
-	m_gfx_cmd_list->RSSetViewports(1, &viewport);
+	Utilities::SetViewport(m_gfx_cmd_list.Get(), width, height);
 }
 
 void D3D12App::setScissorRect(LONG width, LONG height)
 {
-	D3D12_RECT scissor = {
-		.left   = 0,
-		.top    = 0,
-		.right  = width,
-		.bottom = height
-	};
-	m_gfx_cmd_list->RSSetScissorRects(1, &scissor);
+	Utilities::SetScissorRect(m_gfx_cmd_list.Get(), width, height);
 }
 
 void D3D12App::setBackBuffer()
@@ -365,22 +348,13 @@ void D3D12App::setBackBuffer()
 
 void D3D12App::executeCommandList()
 {
-	D3D12_RESOURCE_BARRIER barrier = {};
-	{
-		barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource   = m_back_buffers.at(m_back_buffer_index).Get();
-		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_PRESENT;
-	}
-	m_gfx_cmd_list->ResourceBarrier(1, &barrier);
+	Utilities::ResourceBarrierTransition(
+	    m_gfx_cmd_list.Get(),
+	    m_back_buffers.at(m_back_buffer_index).Get(),
+	    D3D12_RESOURCE_STATE_RENDER_TARGET,
+	    D3D12_RESOURCE_STATE_PRESENT);
 
-	auto hr = m_gfx_cmd_list->Close();
-	ASSERT_IF_FAILED(hr);
-
-	ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list.Get() };
-	m_gfx_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), cmd_lists);
+	Utilities::ExecuteCommandList(m_gfx_cmd_queue.Get(), m_gfx_cmd_list.Get());
 }
 
 void D3D12App::present(UINT sync_interval)
@@ -457,10 +431,11 @@ bool D3D12App::createCommandList(
     ID3D12CommandAllocator*       cmd_allocator,
     ID3D12GraphicsCommandList**   cmd_list)
 {
-	auto hr = m_device->CreateCommandList(0, type, cmd_allocator, nullptr, IID_PPV_ARGS(cmd_list));
-	RETURN_FALSE_IF_FAILED(hr);
-
-	hr = (*cmd_list)->Close();
+	auto hr = Utilities::CreateCommandList(
+	    m_device.Get(),
+	    D3D12_COMMAND_LIST_TYPE_DIRECT,
+	    m_gfx_cmd_allocators.at(m_back_buffer_index).Get(),
+	    m_gfx_cmd_list.GetAddressOf());
 	RETURN_FALSE_IF_FAILED(hr);
 
 	return true;
@@ -491,34 +466,13 @@ bool D3D12App::createBuffer(
     const D3D12_RESOURCE_STATES state,
     ID3D12Resource**            resource)
 {
-	D3D12_HEAP_PROPERTIES heap_properties = {
-		.Type                 = heap_type,
-		.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
-		.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN,
-		.CreationNodeMask     = 0,
-		.VisibleNodeMask      = 0
-	};
-
-	D3D12_RESOURCE_DESC resource_desc = {
-		.Dimension        = D3D12_RESOURCE_DIMENSION_BUFFER,
-		.Alignment        = 0,
-		.Width            = size,
-		.Height           = 1,
-		.DepthOrArraySize = 1,
-		.MipLevels        = 1,
-		.Format           = DXGI_FORMAT_UNKNOWN,
-		.SampleDesc       = { .Count = 1, .Quality = 0 },
-		.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-		.Flags            = flags
-	};
-
-	auto hr = m_device->CreateCommittedResource(
-	    &heap_properties,
-	    D3D12_HEAP_FLAG_NONE,
-	    &resource_desc,
+	auto hr = Utilities::CreateBuffer(
+	    m_device.Get(),
+	    heap_type,
+	    size,
+	    flags,
 	    state,
-	    nullptr,
-	    IID_PPV_ARGS(resource));
+	    resource);
 	RETURN_FALSE_IF_FAILED(hr);
 
 	return true;
@@ -537,19 +491,6 @@ bool D3D12App::createTexture2D(
     const D3D12_HEAP_TYPE       heap_type,
     const UINT64                width,
     const UINT                  height,
-    const DXGI_FORMAT           format,
-    const D3D12_RESOURCE_FLAGS  flags,
-    const D3D12_RESOURCE_STATES state,
-    const D3D12_CLEAR_VALUE*    clear_value,
-    ID3D12Resource**            resource)
-{
-	return createTexture2D(heap_type, width, height, 1, 0, format, flags, state, clear_value, resource);
-}
-
-bool D3D12App::createTexture2D(
-    const D3D12_HEAP_TYPE       heap_type,
-    const UINT64                width,
-    const UINT                  height,
     const UINT16                array_size,
     const UINT16                mip_levels,
     const DXGI_FORMAT           format,
@@ -558,37 +499,45 @@ bool D3D12App::createTexture2D(
     const D3D12_CLEAR_VALUE*    clear_value,
     ID3D12Resource**            resource)
 {
-	D3D12_HEAP_PROPERTIES heap_properties = {
-		.Type                 = heap_type,
-		.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
-		.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN,
-		.CreationNodeMask     = 0,
-		.VisibleNodeMask      = 0
-	};
-
-	D3D12_RESOURCE_DESC resource_desc = {
-		.Dimension        = D3D12_RESOURCE_DIMENSION_TEXTURE2D,
-		.Alignment        = 0,
-		.Width            = width,
-		.Height           = height,
-		.DepthOrArraySize = array_size,
-		.MipLevels        = mip_levels,
-		.Format           = format,
-		.SampleDesc       = { .Count = 1, .Quality = 0 },
-		.Layout           = D3D12_TEXTURE_LAYOUT_UNKNOWN,
-		.Flags            = flags
-	};
-
-	auto hr = m_device->CreateCommittedResource(
-	    &heap_properties,
-	    D3D12_HEAP_FLAG_NONE,
-	    &resource_desc,
+	auto hr = Utilities::CreateTexture2D(
+	    m_device.Get(),
+	    heap_type,
+	    width,
+	    height,
+	    array_size,
+	    mip_levels,
+	    format,
+	    flags,
 	    state,
 	    clear_value,
-	    IID_PPV_ARGS(resource));
+	    resource);
 	RETURN_FALSE_IF_FAILED(hr);
 
 	return true;
+}
+
+
+bool D3D12App::createTexture2D(
+    const D3D12_HEAP_TYPE       heap_type,
+    const UINT64                width,
+    const UINT                  height,
+    const DXGI_FORMAT           format,
+    const D3D12_RESOURCE_FLAGS  flags,
+    const D3D12_RESOURCE_STATES state,
+    const D3D12_CLEAR_VALUE*    clear_value,
+    ID3D12Resource**            resource)
+{
+	return createTexture2D(
+        heap_type,
+        width,
+        height,
+        1,
+        0,
+        format,
+        flags,
+        state,
+        clear_value,
+        resource);
 }
 
 bool D3D12App::loadShader(

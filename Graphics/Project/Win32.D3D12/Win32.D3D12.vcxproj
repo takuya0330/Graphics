@@ -147,6 +147,7 @@ if %ERRORLEVEL%==1 ( exit 0 ) else ( exit /b %ERRORLEVEL% )</Command>
   <ItemGroup>
     <ClInclude Include="..\..\Source\CoreApp.h" />
     <ClInclude Include="..\..\Source\D3D12\D3D12App.h" />
+    <ClInclude Include="..\..\Source\D3D12\D3D12Utilities.h" />
     <ClInclude Include="..\..\Source\Platform.h" />
     <ClInclude Include="..\..\Source\Win32\Debug.h" />
     <ClInclude Include="..\..\Source\Win32\Image.h" />

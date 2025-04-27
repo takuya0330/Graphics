@@ -48,25 +48,18 @@ bool D3D12RayTracingTriangleApp::OnInitialize()
 		return false;
 	}
 
-	hr = m_device->CreateCommandList(
-	    0,
+	hr = Utilities::CreateCommandList(
+	    m_device5.Get(),
 	    D3D12_COMMAND_LIST_TYPE_DIRECT,
 	    m_gfx_cmd_allocators.at(0).Get(),
-	    nullptr,
-	    IID_PPV_ARGS(m_gfx_cmd_list4.GetAddressOf()));
-	RETURN_FALSE_IF_FAILED(hr);
-	hr = m_gfx_cmd_list4->Close();
+	    m_gfx_cmd_list4.GetAddressOf());
 	RETURN_FALSE_IF_FAILED(hr);
 
 	// BLAS 作成
 	{
-		hr = m_gfx_cmd_allocators.at(m_back_buffer_index)->Reset();
-		RETURN_FALSE_IF_FAILED(hr);
-		hr = m_gfx_cmd_list4->Reset(m_gfx_cmd_allocators.at(0).Get(), nullptr);
-		RETURN_FALSE_IF_FAILED(hr);
-
-		ComPtr<ID3D12Fence> fence;
-		hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.ReleaseAndGetAddressOf()));
+		hr = Utilities::Reset(
+		    m_gfx_cmd_allocators.at(m_back_buffer_index).Get(),
+		    m_gfx_cmd_list4.Get());
 		RETURN_FALSE_IF_FAILED(hr);
 
 		// 頂点バッファ作成
@@ -136,37 +129,17 @@ bool D3D12RayTracingTriangleApp::OnInitialize()
 
 		m_gfx_cmd_list4->BuildRaytracingAccelerationStructure(&build_desc, 0, nullptr);
 
-		D3D12_RESOURCE_BARRIER barrier = {};
-		{
-			barrier.Type          = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-			barrier.Flags         = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-			barrier.UAV.pResource = m_blas.Get();
-		}
-		m_gfx_cmd_list4->ResourceBarrier(1, &barrier);
-		m_gfx_cmd_list4->Close();
+		Utilities::ResourceBarrierUAV(m_gfx_cmd_list4.Get(), m_blas.Get());
+		Utilities::ExecuteCommandList(m_gfx_cmd_queue.Get(), m_gfx_cmd_list4.Get());
 
-		ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list4.Get() };
-		m_gfx_cmd_queue->ExecuteCommandLists(1, cmd_lists);
-
-		m_gfx_cmd_queue->Signal(fence.Get(), 1);
-		auto event = ::CreateEvent(nullptr, false, false, nullptr);
-		fence->SetEventOnCompletion(1, event);
-#pragma warning(push)
-#pragma warning(disable : 6387)
-		::WaitForSingleObject(event, INFINITE);
-		::CloseHandle(event);
-#pragma warning(pop)
+		waitForGPU(m_gfx_cmd_queue.Get());
 	}
 
 	// TLAS 作成
 	{
-		hr = m_gfx_cmd_allocators.at(m_back_buffer_index)->Reset();
-		RETURN_FALSE_IF_FAILED(hr);
-		hr = m_gfx_cmd_list4->Reset(m_gfx_cmd_allocators.at(0).Get(), nullptr);
-		RETURN_FALSE_IF_FAILED(hr);
-
-		ComPtr<ID3D12Fence> fence;
-		hr = m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.ReleaseAndGetAddressOf()));
+		hr = Utilities::Reset(
+		    m_gfx_cmd_allocators.at(m_back_buffer_index).Get(),
+		    m_gfx_cmd_list4.Get());
 		RETURN_FALSE_IF_FAILED(hr);
 
 		D3D12_RAYTRACING_INSTANCE_DESC instance_desc = {};
@@ -231,26 +204,10 @@ bool D3D12RayTracingTriangleApp::OnInitialize()
 
 		m_gfx_cmd_list4->BuildRaytracingAccelerationStructure(&build_desc, 0, nullptr);
 
-		D3D12_RESOURCE_BARRIER barrier = {};
-		{
-			barrier.Type          = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-			barrier.Flags         = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-			barrier.UAV.pResource = m_tlas.Get();
-		}
-		m_gfx_cmd_list4->ResourceBarrier(1, &barrier);
-		m_gfx_cmd_list4->Close();
+		Utilities::ResourceBarrierUAV(m_gfx_cmd_list4.Get(), m_tlas.Get());
+		Utilities::ExecuteCommandList(m_gfx_cmd_queue.Get(), m_gfx_cmd_list4.Get());
 
-		ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list4.Get() };
-		m_gfx_cmd_queue->ExecuteCommandLists(1, cmd_lists);
-
-		m_gfx_cmd_queue->Signal(fence.Get(), 1);
-		auto event = ::CreateEvent(nullptr, false, false, nullptr);
-		fence->SetEventOnCompletion(1, event);
-#pragma warning(push)
-#pragma warning(disable : 6387)
-		::WaitForSingleObject(event, INFINITE);
-		::CloseHandle(event);
-#pragma warning(pop)
+		waitForGPU(m_gfx_cmd_queue.Get());
 	}
 
 	// グローバルルートシグネチャ作成
@@ -476,39 +433,19 @@ void D3D12RayTracingTriangleApp::OnUpdate()
 
 void D3D12RayTracingTriangleApp::OnRender()
 {
-	auto hr = m_gfx_cmd_allocators.at(m_back_buffer_index)->Reset();
+	auto hr = Utilities::Reset(
+	    m_gfx_cmd_allocators.at(m_back_buffer_index).Get(),
+	    m_gfx_cmd_list4.Get());
 	ASSERT_IF_FAILED(hr);
 
-	hr = m_gfx_cmd_list4->Reset(m_gfx_cmd_allocators.at(m_back_buffer_index).Get(), nullptr);
-	ASSERT_IF_FAILED(hr);
-
-	D3D12_RESOURCE_BARRIER backbuffer_barrier = {};
-	{
-		backbuffer_barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		backbuffer_barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		backbuffer_barrier.Transition.pResource   = m_back_buffers.at(m_back_buffer_index).Get();
-		backbuffer_barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		backbuffer_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-		backbuffer_barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	}
-	m_gfx_cmd_list4->ResourceBarrier(1, &backbuffer_barrier);
-
-	D3D12_VIEWPORT viewport = {
-		.TopLeftX = 0,
-		.TopLeftY = 0,
-		.Width    = static_cast<float>(m_width),
-		.Height   = static_cast<float>(m_height),
-		.MinDepth = 0.0f,
-		.MaxDepth = 1.0f
-	};
-	m_gfx_cmd_list4->RSSetViewports(1, &viewport);
-	D3D12_RECT scissor = {
-		.left   = 0,
-		.top    = 0,
-		.right  = static_cast<LONG>(m_width),
-		.bottom = static_cast<LONG>(m_height)
-	};
-	m_gfx_cmd_list4->RSSetScissorRects(1, &scissor);
+	Utilities::SetViewport(
+	    m_gfx_cmd_list4.Get(),
+	    static_cast<float>(m_width),
+	    static_cast<float>(m_height));
+	Utilities::SetScissorRect(
+	    m_gfx_cmd_list4.Get(),
+	    static_cast<LONG>(m_width),
+	    static_cast<LONG>(m_height));
 
 	m_gfx_cmd_list4->SetComputeRootSignature(m_global_root_signature.Get());
 	m_gfx_cmd_list4->SetDescriptorHeaps(1, m_resource_heap.GetAddressOf());
@@ -517,50 +454,28 @@ void D3D12RayTracingTriangleApp::OnRender()
 	gpu_handle.ptr += m_resource_alloc_size;
 	m_gfx_cmd_list4->SetComputeRootDescriptorTable(1, gpu_handle);
 
-	D3D12_RESOURCE_BARRIER output_barrier = {};
-	{
-		output_barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		output_barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		output_barrier.Transition.pResource   = m_dxr_output.Get();
-		output_barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		output_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
-		output_barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-	}
-	m_gfx_cmd_list4->ResourceBarrier(1, &output_barrier);
+	Utilities::ResourceBarrierTransition(
+	    m_gfx_cmd_list4.Get(),
+	    m_dxr_output.Get(),
+	    D3D12_RESOURCE_STATE_COPY_SOURCE,
+	    D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 	m_gfx_cmd_list4->SetPipelineState1(m_state_object.Get());
 	m_gfx_cmd_list4->DispatchRays(&m_dispatch_desc);
 
-	{
-		output_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-		output_barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_COPY_SOURCE;
-
-		backbuffer_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		backbuffer_barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_COPY_DEST;
-	}
 	D3D12_RESOURCE_BARRIER barriers[] = {
-		output_barrier,
-		backbuffer_barrier
+		Utilities::CreateResourceBarrierTrantision(m_dxr_output.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),
+		Utilities::CreateResourceBarrierTrantision(m_back_buffers.at(m_back_buffer_index).Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST),
 	};
 	m_gfx_cmd_list4->ResourceBarrier(2, barriers);
 	m_gfx_cmd_list4->CopyResource(m_back_buffers.at(m_back_buffer_index).Get(), m_dxr_output.Get());
 
-	D3D12_RESOURCE_BARRIER present_barrier = {};
-	{
-		present_barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		present_barrier.Flags                  = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		present_barrier.Transition.pResource   = m_back_buffers.at(m_back_buffer_index).Get();
-		present_barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		present_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-		present_barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_PRESENT;
-	}
-	m_gfx_cmd_list4->ResourceBarrier(1, &present_barrier);
-
-	hr = m_gfx_cmd_list4->Close();
-	ASSERT_IF_FAILED(hr);
-
-	ID3D12CommandList* cmd_lists[] = { m_gfx_cmd_list4.Get() };
-	m_gfx_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), cmd_lists);
+	Utilities::ResourceBarrierTransition(
+	    m_gfx_cmd_list4.Get(),
+	    m_back_buffers.at(m_back_buffer_index).Get(),
+	    D3D12_RESOURCE_STATE_COPY_DEST,
+	    D3D12_RESOURCE_STATE_PRESENT);
+	Utilities::ExecuteCommandList(m_gfx_cmd_queue.Get(), m_gfx_cmd_list4.Get());
 
 	present(1);
 	waitPreviousFrame();
